@@ -1,0 +1,14 @@
+import os
+import subprocess
+benchmarkList = ["403.gcc",'400.perlbench','401.bzip2','429.mcf','433.milc','444.namd','445.gobmk','450.soplex','453.povray','456.hmmer','458.sjeng','462.libquantum','464.h264ref','470.lbm','471.omnetpp','473.astar','482.sphinx3','483.xalancbmk','998.specrand']
+path = "/home/mohit/updated-dBp/Patches/no-fp/"
+pfile = open("home/mohit/updated-dBp/Patches/stackpadding-results.txt","w")
+for benchmark in benchmarkList:
+    if benchmark == "482.sphinx3":
+            name = "sphinx_livepretend"
+    if benchmark == "483.xalancbmk":
+            name = "Xalan"
+    cmd = "less stackpadding.txt | grep \""+name+"\" | awk \'NR == 1 { max=$1; min=$1; sum=0 } \
+   { if ($1>max) max=$1; if ($1<min) min=$1; sum+=$1;} \
+   END {printf "Min: %d\tMax: %d\tAverage: %f\n", min, max, sum/NR}\'
+    pipe = subprocess.Popen(
