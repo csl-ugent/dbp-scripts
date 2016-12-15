@@ -22,6 +22,16 @@ def hex_int(x):
 def hex_str(x):
     return format(x, 'x')
 
+# We can input seed tuples on the command line through a comma-separated list. If an element is missing it's presumed to be the default seed.
+def seed_tuple(s):
+    tokens = s.split(',')
+    types = seed.get_types()
+    assert len(tokens) == len(types), 'The number of seeds on the command line differ from the number of protections.'
+
+    # First convert the tokens to integers, then create the actual seeds
+    int_seeds = [int(token) if token else 0 for token in tokens]
+    return [cls(s) for cls, s in zip(types, int_seeds)]
+
 # For every type, get from the tuple an instance or a default seed
 def get_seeds_from_tuple(seed_tuple, *types):
     ret = []
