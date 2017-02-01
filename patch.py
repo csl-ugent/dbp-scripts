@@ -51,7 +51,47 @@ def core(base_data, div_path, seeds, patchfile):
     # If we had a patch to apply, return the resulting symfile. Else return the patch we created.
     return base_symfile if patchfile else output_patch
 
-def main():
+# This function checks the arguments. It exists so that the script's functionality can be invoked both from the command line as
+# from another python script.
+def patch(base_data, seeds, div_symfile_path=None, patch_path=None, output_dir=None):
+    # Determine the mode of operation. If we are given a patch we should test it, if not we should generate one.
+    if patch_path:
+        if div_symfile_path:
+            print('************ Patch validation mode. **********')
+
+            # Apply the patch to the base_symfile and compare the (diversified) result with the diversified symfile
+            patched_symfile = core(base_data, None, seeds, patch_path)
+            div_symfile = SymFile().read_f(div_symfile_path)
+
+            if patched_symfile == div_symfile:
+                print('************ Patch verified. **********')
+            else:
+                print('************ Patch failed. **********')
+                return False
+
+        else:
+            print('************ Patch application mode. **********')
+            assert output_dir, 'Need an output directory to generate the symfile!'
+
+            # Apply the patch to the base symfile and write out the patched (diversified) symfile
+            patched_symfile = core(base_data, None, seeds, patch_path)
+            patched_symfile.write_f(os.path.join(output_dir, 'symfile'))
+            print('************ Patch applied. **********')
+
+    else:
+        assert div_symfile_path, 'No patch nor diversified symfile was given! There is nothing to do for this script!'
+
+        print('************ Patch generation mode. **********')
+        assert output_dir, 'Need an output directory to generate the patch!'
+
+        # Generate the actual patch
+        patch = core(base_data, div_symfile_path, seeds, None)
+        patch.write(os.path.join(output_dir, 'patch'))
+        print('************ Patch generated. **********')
+
+    return True
+
+if __name__ == '__main__':
     # Parsing the arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-b', '--base_data', required=True, help='The directory containing the base data.')
@@ -61,37 +101,6 @@ def main():
     parser.add_argument('-o', '--output_directory', help='The directory where outputs will be written.')
     args = parser.parse_args()
 
-    # Determine the mode of operation. If we are given a patch we should test it, if not we should generate one.
-    if args.patch:
-        if args.diversified_symfile:
-            print('************ Patch validation mode. **********')
-
-            # Apply the patch to the base_symfile and compare the (diversified) result with the diversified symfile
-            patched_symfile = core(args.base_data, args.diversified_symfile, args.seeds, args.patch)
-            div_symfile = SymFile().read_f(args.diversified_symfile)
-
-            if patched_symfile == div_symfile:
-                print('************ Patch verified. **********')
-            else:
-                print('************ Patch failed. **********')
-
-        else:
-            print('************ Patch application mode. **********')
-            assert args.output_directory, 'Need an output directory to generate the symfile!'
-
-            # Apply the patch to the base symfile and write out the patched (diversified) symfile
-            patched_symfile = core(args.base_data, args.diversified_symfile, args.seeds, args.patch)
-            patched_symfile.write().write_f(os.path.join(args.output_directory, 'symfile'))
-            print('************ Patch applied. **********')
-
-    else:
-        assert args.diversified_symfile, 'No patch nor diversified symfile was given! There is nothing to do for this script!'
-
-        print('************ Patch generation mode. **********')
-        assert args.output_directory, 'Need an output directory to generate the patch!'
-
-        # Generate the actual patch
-        patch = core(args.base_data, args.diversified_symfile, args.seeds, args.patch)
-        patch.write(os.path.join(args.output_directory, 'patch'))
-        print('************ Patch generated. **********')
-
+    # Call the patch function and have a different exit value depending on its result
+    res = patch(args.base_data, args.seeds, args.diversified_symfile, args.patch, args.output_directory)
+    sys.exit(0 if res else 1)
