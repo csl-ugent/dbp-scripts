@@ -28,7 +28,7 @@ for (benchmark, name) in support.benchmarks_gen():
     # Get all the sections from all the objects in the build directory
     print('************************* ' + benchmark + ' **********************')
     print('************************* Gathering sections **********************')
-    linkermap = Map(os.path.join(support.create_path_for_seeds(config.build_dir), benchmark, name + '.map'))
+    linkermap = Map(os.path.join(support.create_path_for_seeds(config.build_dir), benchmark, name + '.map'), None)
 
     # Get all the pre_sections and make linker rules out of them. We do this so that they can't change order (which apparently, they can...).
     # Use a '*' (even though it is unnecessary) so Diablo's map parser will recognize it as a pattern.

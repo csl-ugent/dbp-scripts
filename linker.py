@@ -5,10 +5,47 @@ import config
 import os
 from support import hex_int
 
+def gather_section_alignment(map_path, output_file):
+    build_dir = os.path.dirname(map_path)
+    with open(map_path, 'r') as f_map, open(output_file, 'w') as f_out:
+        for line in f_map:
+            # Find the lines that look like 'LOAD path'
+            tokens = line.split()
+            if len(tokens) != 2 or tokens[0] != 'LOAD':
+                continue
+
+            # Get the path, check whether it is an object or an archive
+            path = tokens[1]
+            if path.endswith('.o'):
+                obj = True
+            elif path.endswith('.a'):
+                obj = False
+            else:
+                continue
+
+            # If the path isn't already absolute, make it so by prepending the build directory
+            if not os.path.isabs(path):
+                path = os.path.join(build_dir, path)
+
+            # If it's an object, write out its path
+            if obj:
+                f_out.write(path + '\n')
+
+            # Get the objdump and filter the result, looking for .text sections (or or object file names in case of an archive)
+            for line in subprocess.check_output(['objdump', '-h', path], universal_newlines=True).splitlines():
+                if '.o:' in line and not obj:
+                    obj_name = line.split(':')[0]
+                    f_out.write(path + '(' + obj_name + ')\n')
+                elif '.text' in line and not '.ARM.ex' in line:
+                    tokens = line.split()
+                    name = tokens[1]
+                    powers = tokens[6].split('**')
+                    alignment =  int(powers[0]) ** int(powers[1])
+                    f_out.write(name + ' ' + str(alignment) + '\n')
 
 class Section:
     """A class representing a section in a map"""
-    def __init__(self, f_map, line):
+    def __init__(self, f_map, line, align_lines):
         tokens = line.split()
 
         self.name = tokens[0]
@@ -27,9 +64,29 @@ class Section:
             self.size = hex_int(tokens[2])
             self.obj = tokens[3]
 
+        # If we can find the alignment, try to do so
+        if align_lines is not None:
+            searching = False
+            for align_line in align_lines:
+                # Check if this is an object (part of an archive or not) in which we should be searching.
+                if align_line.endswith('.o') or align_line.endswith('.o)'):
+                    searching = self.obj in align_line
+
+                elif searching:
+                    tokens = align_line.split()
+                    if tokens[0] == self.name:
+                        self.alignment = int(tokens[1])
+
 class Map:
     """A class representing a map"""
-    def __init__(self, map_path):
+    def __init__(self, map_path, align_path):
+        # Load all section alignment information if it is present
+        if align_path is not None:
+            with open(align_path, 'r') as f_align:
+                align_lines = f_align.read().splitlines()
+        else:
+            align_lines = None
+
         with open(map_path, 'r') as f_map:
             self.discarded_sections = []
             self.pre_sections = []
@@ -72,7 +129,7 @@ class Map:
                 if '.text' in line and not '*' in line:
                     # Handle the line depending on where we are in the map
                     # Decode the entry into an object
-                    target_sections.append(Section(f_map, line))
+                    target_sections.append(Section(f_map, line, align_lines))
 
 # Creates a linker script in which the text sections passed as an argument are placed in explicit order. If no sections are given, creates the default linker script.
 def create_linker_script(sections):

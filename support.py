@@ -22,6 +22,22 @@ def hex_int(x):
 def hex_str(x):
     return format(x, 'x')
 
+# For every type, get from the tuple an instance or a default seed
+def get_seeds_from_tuple(seed_tuple, *types):
+    ret = []
+    for t in types:
+        found = False
+        for s in seed_tuple:
+            if isinstance(s, t):
+                found = True
+                ret.append(s)
+                break
+
+        # If we haven't found any instance of t, create a default one
+        if not found:
+            ret.append(t(0))
+    return ret
+
 def find_first_uppercase(x):
     for (idx, char) in enumerate(x):
         if char.isupper():
