@@ -21,6 +21,9 @@ class Location:
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((self.linenr +1) * (self.filenum +1))
+
     def __repr__(self):
         return ' '.join((str(self.linenr), str(self.filenum)))
 
@@ -47,9 +50,6 @@ class Line:
 
     def __repr__(self):
         return ' '.join((hex_str(self.address), hex_str(self.size), str(self.location)))
-
-    def same_pos(self, other):
-        return self.location == other.location
 
     # Update the address for a line, and all other data associated with it (which is nothing anymore at this point)
     def update_address(self, offset):

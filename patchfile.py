@@ -1,3 +1,4 @@
+from difflib import SequenceMatcher
 import itertools
 
 # Import own modules
@@ -331,75 +332,23 @@ class FuncPatch:
         # Create the stack patch
         self.stack_patch = StackPatch.create(func_base, func_div)
 
-        # Go over all lines and search for changes
-        base_offset = 0
-        div_offset = 0
-        curr_line = func_base.lines[0]# We use this line as point of reference, to see whether we need to resynchronize
-        while base_offset < len(func_base.lines) and div_offset < len(func_div.lines):
-            base_line = func_base.lines[base_offset]
-            div_line = func_div.lines[div_offset]
+        # Get all the lines' locations and use these to diff
+        base_locs = [line.location for line in func_base.lines]
+        div_locs = [line.location for line in func_div.lines]
+        for tag, i1, i2, j1, j2 in SequenceMatcher(None, base_locs, div_locs, autojunk=False).get_opcodes():
+            if tag == 'insert':
+                self.patches.append(AdditionPatch.create(i1, func_div.lines[j1:j2]))
 
-            # Every time the linenr or filenum changes we have a new synchronization point
-            # Thus we check whether we are still in sync. If not, we'll resynchronize and create a patch
-            if not base_line.same_pos(div_line):
-                if curr_line.same_pos(div_line):
-                    # DIV runs behind, this means some stuff was added
-                    added_lines = []
-                    while not base_line.same_pos(div_line) and div_offset < (len(func_div.lines) -1):
-                        added_lines.append(div_line)
-                        div_offset += 1
-                        div_line = func_div.lines[div_offset]
+            elif tag == 'delete':
+                self.patches.append(DeletionPatch.create(i1, func_base.lines[i1:i2]))
 
-                    # Create addition patch
-                    self.patches.append(AdditionPatch.create(base_offset, added_lines))
+            elif tag == 'replace':
+                self.patches.append(SubstitutionPatch.create(i1, func_div.lines[j1:j2], func_base.lines[i1:i2]))
 
-                elif curr_line.same_pos(base_line):
-                    # BASE runs behind, this means some stuff was deleted
-                    deleted_lines = []
-                    patch_offset = base_offset
-                    while not div_line.same_pos(base_line) and base_offset < (len(func_base.lines) -1):
-                        deleted_lines.append(base_line)
-                        base_offset += 1
-                        base_line = func_base.lines[base_offset]
-
-                    # Create deletion patch
-                    self.patches.append(DeletionPatch.create(patch_offset, deleted_lines))
-
-                else:
-                    # A substitution has taken place
-                    added_lines = []
-                    deleted_lines = []
-                    patch_offset = base_offset
-                    while not base_line.same_pos(div_line) and base_offset < (len(func_base.lines) -1) and div_offset < (len(func_div.lines) -1):
-                        added_lines.append(div_line)
-                        deleted_lines.append(base_line)
-                        base_offset += 1
-                        div_offset += 1
-                        base_line = func_base.lines[base_offset]
-                        div_line = func_div.lines[div_offset]
-
-                    # Create substitution patch
-                    self.patches.append(SubstitutionPatch.create(patch_offset, added_lines, deleted_lines))
-
-                # Update the point of reference, and fallthrough into the normal line comparison
-                curr_line = base_line
-
-            # Check whether nothing has changed in the content of the line
-            # If so, create a line patch. Mind that we are predicting the address of the diversified line using an offset.
-            if (base_line.address + address_offset) != div_line.address or base_line.size != div_line.size:
-                self.patches.append(LinePatch.create(base_offset, base_line, div_line))
-
-            # Go to the next lines
-            base_offset += 1
-            div_offset += 1
-
-        # If base file hadn't finished yet, some lines of it were deleted
-        if base_offset < len(func_base.lines):
-            self.patches.append(DeletionPatch.create(base_offset, func_base.lines[base_offset:]))
-
-        # If diversified file hadn't finished yet, some lines of it were added
-        if div_offset < len(func_div.lines):
-            self.patches.append(AdditionPatch.create(base_offset, func_div.lines[div_offset:]))
+            elif tag == 'equal':
+                for base_offset, (base_line, div_line) in enumerate(zip(func_base.lines[i1:i2], func_div.lines[j1:j2]), i1):
+                    if (base_line.address + address_offset) != div_line.address or base_line.size != div_line.size:
+                        self.patches.append(LinePatch.create(base_offset, base_line, div_line))
 
         return self
 
