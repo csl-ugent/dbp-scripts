@@ -200,6 +200,7 @@ class Stack:
 class SymFile:
     """A class representing a symfile"""
     def __init__(self):
+        self.info = ''
         self.files = []
         self.funcs = []
         self.publics = []
@@ -231,6 +232,8 @@ class SymFile:
 
     def __repr__(self):
         res = self.module
+        if self.info:
+            res += self.info
         for fi in self.files:
             res = res + str(fi)
         for func in self.funcs:
@@ -334,6 +337,10 @@ class SymFile:
             # Handle a module record (there can be only one)
             if record_type == 'MODULE':
                 self.module = line
+
+            # Handle an info record (not described by the documentation, but there's only one of these)
+            elif record_type == 'INFO':
+                self.info = line
 
             # Handle a file record (there's a number of them, but we don't expect to ever change them)
             elif record_type == 'FILE':
