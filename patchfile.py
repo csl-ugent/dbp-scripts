@@ -1,4 +1,5 @@
 from difflib import SequenceMatcher
+import bz2
 import itertools
 
 # Import own modules
@@ -483,7 +484,9 @@ class PatchFile:
         return self
 
     def write(self, path, verbose=False):
+        # Get the output and write it out. This can be more verbose (and better readable by humans) or minimally encoded (and better parsable)
+        output = repr(self) if verbose else str(self)
         with open(path, 'w') as f:
-            # Get the output and write it out. This can be more verbose (and better readable by humans) or minimally encoded (and better parsable)
-            output = repr(self) if verbose else str(self)
+            f.write(output)
+        with bz2.open(path + '.bz2', 'wt', encoding='utf-8') as f:
             f.write(output)
