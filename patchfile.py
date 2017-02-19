@@ -282,9 +282,13 @@ class FuncPatch:
             res = '\n'
 
         # We encode the relative offsets between patches in such a way that two patches on two lines right after each other have offset 0
+        # If the offset is 0 we don't encode it.
         prev_offset = -1
         for patch in self.patches:
-            res += hex_str(patch.offset - prev_offset -1) + str(patch)
+            rel_offset = patch.offset - prev_offset -1
+            if rel_offset:
+                res += hex_str(rel_offset)
+            res += str(patch)
             prev_offset = patch.offset
         return res
 
@@ -358,7 +362,7 @@ class FuncPatch:
         self = cls('')
 
         # Decode the header and remove it from the lines
-        tokens = lines[0].rstrip().split('FUNC')
+        tokens = lines[0].rstrip().split('F')
         if len(tokens) == 2 and tokens[1]:
             self.stack_patch = StackPatch.read(tokens[1])
         del lines[0]
@@ -372,8 +376,9 @@ class FuncPatch:
             header = lines[idx].rstrip()
 
             # Get the location of the identifying uppercase, and the relative offset
+            # If there relative offset is encoded, it was 0.
             up_idx = support.find_first_uppercase(header)
-            offset += hex_int(header[:up_idx]) +1
+            offset += hex_int(header[:up_idx]) +1 if (up_idx != 0) else 1
 
             # Handle the right type of patch
             idx += 1 # Move to the line after the header, easier indexing after this
@@ -411,10 +416,13 @@ class PatchFile:
         for (idx, func) in enumerate(self.func_patches):
             patch = str(func)
             # We won't output empty patches. We simply prepend an offset to every function patch
-            # that represents the number of empty patches that went before.
+            # that represents the number of empty patches that went before. If the offset is 0,
+            # don't encode it.
             if patch != '\n':
-                res += hex_str(idx - prev_idx -1) + 'FUNC'
-                res += patch
+                offset = idx - prev_idx -1
+                if offset:
+                    res += hex_str(offset)
+                res += 'F' + patch
                 prev_idx = idx
         return res
 
@@ -449,7 +457,7 @@ class PatchFile:
             # Find all the function patches and determine how many empty patches there are between them
             patch_lines = []
             for line in f:
-                if 'FUNC' in line:
+                if 'F' in line:
                     # If we were gathering lines for a patch (we won't be in the beginning), create it
                     if patch_lines:
                         self.func_patches.append(FuncPatch.read(patch_lines))
@@ -457,8 +465,10 @@ class PatchFile:
                     # Add this line (the patch header) to the lines
                     patch_lines = [line]
 
-                    # Find out how many empty function patches there are and create them
-                    offset = hex_int(line[:line.find('FUNC')])
+                    # Find out the offset. If none is encoded it was 0. With the offset we also know
+                    # how many empty function patches there are and can create them
+                    token_pos = line.find('F')
+                    offset = hex_int(line[:token_pos]) if (token_pos != 0) else 0
                     for _ in range(offset):
                         self.func_patches.append(FuncPatch(''))
 
