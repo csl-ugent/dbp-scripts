@@ -42,6 +42,8 @@ regression_dir =
 # Paths for tools present in those repostories
 clang_bin = os.path.join(clang_dir, 'bin', 'clang')
 dump_syms = os.path.join(breakpad_server_dir, 'src', 'tools', 'linux', 'dump_syms', 'dump_syms')
+fake_diablo_bin = 'fakediablo.sh'
+fake_diablo_dir = os.path.join(regression_dir, 'common', 'fakediablo')
 gcc_bin = os.path.join(gcc_toolchain_dir, 'bin', target_triple + '-gcc')
 regression_script = os.path.join(regression_dir, 'common', 'regression-main', 'regression.py')
 spec_install_script = os.path.join(regression_dir, 'speccpu2006', 'install.sh')
