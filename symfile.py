@@ -234,16 +234,12 @@ class SymFile:
         res = self.module
         if self.info:
             res += self.info
-        for fi in self.files:
-            res = res + str(fi)
-        for func in self.funcs:
-            res = res + str(func)
+        file_str = ''.join([str(f) for f in self.files])
+        func_str = ''.join([str(func) for func in self.funcs])
         self.publics.sort(key=attrgetter('address'))
-        for public in self.publics:
-            res = res + str(public) + '\n'
-        for stack in self.stacks:
-            res = res + str(stack) + '\n'
-        return res
+        public_str = '\n'.join([str(public) for public in self.publics]) + '\n'
+        stack_str = '\n'.join([str(stack) for stack in self.stacks]) + '\n'
+        return res + file_str + func_str + public_str + stack_str
 
     # Augment the symfile with information from the linkermap
     def augment(self, linkermap, build_dir):
