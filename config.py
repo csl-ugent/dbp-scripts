@@ -10,9 +10,9 @@ max_seed = 1000000
 nopinsertion_chance = 20
 nr_of_measurements = 30
 root_seed = 101
-ssh_params = # You should put the parameters required to SSH to your testing board here (e.g. '-p 915 babrath@arndale')
-target_triple =
-cross_compilation_options =
+ssh_params = 'arndale' # You should put the parameters required to SSH to your testing board here (e.g. '-p 915 babrath@arndale')
+target_triple = 'arm-linux-gnueabihf'
+cross_compilation_options = '-target ' + target_triple + ' -mcpu=cortex-a8 -marm -I /usr/arm-linux-gnueabihf/include/c++/4.9.3/ -I /usr/arm-linux-gnueabihf/include/c++/4.9.3/backward -I /usr/arm-linux-gnueabihf/include/c++/4.9.3/arm-linux-gnueabihf/ -I /usr/arm-linux-gnueabihf/include/'
 
 # Non-configurable directories and files that are located inside this repository.
 scripts_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -22,7 +22,7 @@ replay_src_dir = os.path.join(scripts_dir, 'replay')
 
 # Configurable directories for helper tools and such that only need to be set up once.
 # Setting bin_dir should be enough.
-bin_dir =
+bin_dir = '/opt/bin'
 breakpad_server_dir = os.path.join(bin_dir, 'breakpad_server')
 gpg_dir = os.path.join(bin_dir, 'gpg')
 replay_dir = os.path.join(bin_dir, 'replay')
@@ -31,7 +31,7 @@ spec_dir = os.path.join(bin_dir, 'spec2006')
 # Configurable directories and files for base directory in which all results are generated.
 # Setting base_dir should be enough. These variables can be re-configured by calling the
 # set_base_dir function (which doesn't actually set base_dir itself, so that remains constant).
-base_dir =
+base_dir = '/opt/data'
 def set_base_dir(base_dir):
     global build_dir, data_dir, extra_build_dir, log_file, patches_dir, reports_dir, seed_file, tmp_dir, link_script
     build_dir = os.path.join(base_dir, 'build')
@@ -54,11 +54,11 @@ if os.path.exists(base_dir):
     init_logging()
 
 # Paths for repositories/tools we use
-breakpad_dir =
-clang_dir =
-cross_toolchain_dir =
-regression_dir =
-spec_tarball =
+breakpad_dir = '/opt/breakpad/src'
+clang_dir = '/opt/llvm'
+cross_toolchain_dir = '/usr'
+regression_dir = '/opt/regression/'
+spec_tarball = '/opt/SPEC_CPU2006v1.1.tar.bz2'
 
 # Paths for tools present in those repositories
 breakpad_archive = os.path.join('src', 'client', 'linux', 'libbreakpad_client.a')
