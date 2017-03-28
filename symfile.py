@@ -217,13 +217,19 @@ class SymFile:
         if a != b:
             return False
 
-        # Copy public lists, order on address, and compare
-        a = self.publics
-        b = other.publics
-        a.sort(key=attrgetter('address'))
-        b.sort(key=attrgetter('address'))
-        if a != b:
-            return False
+        # Disable the comparing of publics. When recreating a symfile we can't guarantee these to be correct. Publics
+        # that are located before the first FUNC (such as _init) can after NOP insertion end up on a different address
+        # that we can not predict. It is also a question what extra help these publics bring to the primary use of
+        # recreated symfiles: using them to interpret crash reports. An improvement here would be to only compare publics
+        # whose address (in the correct symfile) comes before the address of the first FUNC record.
+        if False:
+            # Copy public lists, order on address, and compare
+            a = self.publics
+            b = other.publics
+            a.sort(key=attrgetter('address'))
+            b.sort(key=attrgetter('address'))
+            if a != b:
+                return False
 
         return True
 
