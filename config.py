@@ -22,7 +22,7 @@ replay_dir = os.path.join(scripts_dir, 'replay')
 # Configurable directories and files for the test directory. Setting base_dir
 # should be enough, the rest is derived from it (but can be changed).
 base_dir =
-breakpad_client_dir = os.path.join(base_dir, 'breakpad_client')
+extra_build_dir = os.path.join(base_dir, 'extra_build') # This directory contains the build directories for extra source code (such as breakpad client)
 breakpad_server_dir = os.path.join(base_dir, 'breakpad_server')
 build_dir = os.path.join(base_dir, 'build')
 data_dir = os.path.join(base_dir, 'data')
@@ -40,6 +40,7 @@ gcc_toolchain_dir =
 regression_dir =
 
 # Paths for tools present in those repostories
+breakpad_archive = os.path.join('src', 'client', 'linux', 'libbreakpad_client.a')
 clang_bin = os.path.join(clang_dir, 'bin', 'clang')
 dump_syms = os.path.join(breakpad_server_dir, 'src', 'tools', 'linux', 'dump_syms', 'dump_syms')
 fake_diablo_bin = 'fakediablo.sh'
@@ -50,8 +51,6 @@ spec_install_script = os.path.join(regression_dir, 'speccpu2006', 'install.sh')
 spec2regression_script = os.path.join(regression_dir, 'speccpu2006', 'spec2regression.sh')
 
 # Compiling options for tools
-breakpad_options = '-Wl,--library=stdc++ -Wl,--library=atomic -Wl,--library=pthread -Wl,--library=:' + os.path.join(dump_dir, 'dump.o') + ' -Wl,--library=:' + os.path.join(breakpad_client_dir, 'src', 'client', 'linux', 'libbreakpad_client.a') # The options required to link with the breakpad client
+breakpad_options = '-Wl,--library=stdc++ -Wl,--library=atomic -Wl,--library=pthread -Wl,--library=:' + os.path.join(dump_dir, 'dump.o') # The options required to link with the breakpad client
 clang_options = '-isysroot ' + os.path.join(gcc_toolchain_dir, target_triple, 'sysroot') + ' -no-integrated-as -gcc-toolchain ' + gcc_toolchain_dir + ' -ccc-gcc-name ' + target_triple + ' -target ' + target_triple # Extra options for clang, to make it use the gcc backend
 diablo_options = '-Z -kco -exidx --no-merge-exidx'
-breakpad_client_options = ' '.join([binary_options, clang_options])
-spec_options = ' '.join([breakpad_options, binary_options])
