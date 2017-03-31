@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import logging
 import os
 import sys
 
@@ -26,11 +27,17 @@ extra_build_dir = os.path.join(base_dir, 'extra_build') # This directory contain
 breakpad_server_dir = os.path.join(base_dir, 'breakpad_server')
 build_dir = os.path.join(base_dir, 'build')
 data_dir = os.path.join(base_dir, 'data')
+log_file = os.path.join(base_dir, 'errors')
 patches_dir = os.path.join(base_dir, 'patches')
 tmp_dir = os.path.join(base_dir, 'tmp')
 link_script = os.path.join(tmp_dir, 'link.xc')
 seed_file = os.path.join(base_dir, 'seeds.txt')
 spec_dir = os.path.join(base_dir, 'spec2006')
+
+# Error logging, log everything to the same file.
+logger = logging.getLogger()
+fh = logging.FileHandler(log_file)
+logger.addHandler(fh)
 
 # Paths for repositories/tools we use
 breakpad_dir =

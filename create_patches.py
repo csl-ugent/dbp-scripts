@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import concurrent.futures
+import logging
 import os
 import shutil
 import sys
@@ -23,9 +24,9 @@ def create_patch(benchmark, seeds):
 
         # Verify the patch is correct
         if not patch.patch(base_data, seeds, div_symfile_path=div_symfile_path, patch_path=os.path.join(patch_dir, 'patch')):
-            sys.stderr.write('PATCH VERIFICATION FAILED FOR ' + patch_dir + '\n')
-    except:
-        sys.stderr.write('PATCH CREATION FAILED FOR ' + patch_dir + '\n')
+            logging.getLogger().error('Patch verification failed for ' + patch_dir)
+    except Exception:
+        logging.getLogger().exception('Patch creation failed for ' + patch_dir)
 
 # Start with destroying the previous directory structure, if it exists
 shutil.rmtree(config.patches_dir, True)
