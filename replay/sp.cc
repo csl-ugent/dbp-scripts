@@ -31,7 +31,8 @@ int main(int argc, char** argv) {
     iss >> filename >> function_name;
 
     /* Get the generator for this filename (only constructed the first time, so the seeds are generated correctly) */
-    std::mt19937& generator = generators.emplace(filename, std::mt19937((unsigned)seed ^ llvm::hash_value(filename.substr(1 + filename.find_last_of('/'))))).first->second;
+    std::string hash_str = (filename.find_last_of('/') != std::string::npos) ? filename.substr(1 + filename.find_last_of('/')) : filename;
+    std::mt19937& generator = generators.emplace(filename, std::mt19937((unsigned)seed ^ llvm::hash_value(hash_str))).first->second;
 
     /* Generate the offset */
     unsigned stack_offset = distribution(generator) * 8;
