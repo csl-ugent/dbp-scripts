@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <random>
 #include <sstream>
@@ -14,11 +15,9 @@ int main(int argc, char** argv) {
   const uint32_t seed = std::stoul(argv[1]);
   const uint32_t chance = std::stoul(argv[2]);
 
-  /* Initialize RNG stuff */
-  std::mt19937 rng_bbl_seeder(seed);
-  std::uniform_int_distribution<uint32_t> pct_distribution(0, 99);
-
   /* Open file and read line per line */
+  std::uniform_int_distribution<uint32_t> pct_distribution(0, 99);
+  std::mt19937 rng_bbl_seeder;
   std::ifstream input(argv[3]);
   std::string line;
   while (std::getline(input, line)) {
@@ -27,6 +26,11 @@ int main(int argc, char** argv) {
      * archive.a(obj.o):.text_section (instead of archive.a:obj.o:.text_section)
      */
     if (line.find(' ') == std::string::npos) {
+      /* Reseed the BBL seeder RNG for this path */
+      std::string hash_str = line.substr(line.find_last_of('/'));
+      size_t hash = std::hash<std::string>{}(hash_str);
+      rng_bbl_seeder.seed(seed ^ hash);
+
       size_t lpos = line.find_first_of(':');
       size_t rpos = line.find_last_of(':');
       if (lpos != rpos) {
