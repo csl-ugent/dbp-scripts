@@ -23,3 +23,8 @@ To recreate the tests, run the scripts in this order:
 - extract_data.py: Extract all the data (symfiles and others) that is required to generate the patches.
 - create_patches.py: Creates the patches for all binaries and different combinations of protections. The patches are immediately tested for correctness.
 - create_report.py: Creates a report (ODS format) from the patches.
+
+Some other scripts of note are:
+- patch.py: Can be used to create individual patches between symfiles.
+- regression_binaries.py: Regression tests the protected binaries.
+- regression_symfiles.py: Regression tests the symfiles generated for binaries rewritten by Diablo.
