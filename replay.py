@@ -8,7 +8,9 @@ import support
 
 # We replay the shuffling of functions/sections using the seed, then predict the changes in addresses
 # that occur due to alignment.
-def replay_fs(base_symfile, seed):
+def replay_fs(seed, base_symfile, base_data):
+    print('************ Replaying function shuffling. **********')
+
     # Get the start address for the shuffle functions
     address = base_symfile.funcs[base_symfile.nr_of_pre_funcs].address
 
@@ -37,7 +39,9 @@ def replay_fs(base_symfile, seed):
         # Update the address of the function and all associated data
         func.update_address(address)
 
-def replay_nop(base_symfile, seed, base_data):
+def replay_nop(seed, base_symfile, base_data):
+    print('************ Replaying NOP insertion. **********')
+
     # Use the replay tool to find the offsets on which NOPs were inserted for every section
     sections = {}
     for line in subprocess.check_output([os.path.join(config.replay_dir, 'nop'), str(seed), str(config.nop_chance), os.path.join(base_data, 'nopinsertion.list')], universal_newlines=True).splitlines():
@@ -88,7 +92,9 @@ def replay_nop(base_symfile, seed, base_data):
         # Rebuild function-wide information
         func.rebuild_meta_info(first_line_offset)
 
-def replay_sp(base_symfile, seed, base_data):
+def replay_sp(seed, base_symfile, base_data):
+    print('************ Replaying stack padding. **********')
+
     # Use the replay tool to find the stack offset for every function
     sections = {}
     for line in subprocess.check_output([os.path.join(config.replay_dir, 'sp'), str(seed), str(config.max_padding),

@@ -1,3 +1,5 @@
+import replay
+
 class Seed:
     """A class a seed in general"""
     def __init__(self, seed):
@@ -22,14 +24,17 @@ class Seed:
 class SPSeed(Seed):
     """The class for SP seeds"""
     idx = len(Seed.__subclasses__())
+    replay = replay.replay_sp
 
 class FSSeed(Seed):
     """The class for FS seeds"""
     idx = len(Seed.__subclasses__())
+    replay = replay.replay_fs
 
 class NOPSeed(Seed):
     """The class for NOP seeds"""
     idx = len(Seed.__subclasses__())
+    replay = replay.replay_nop
 
 nr_of_types = len(Seed.__subclasses__())
 

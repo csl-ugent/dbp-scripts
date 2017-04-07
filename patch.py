@@ -4,8 +4,6 @@ import os
 import sys
 
 # Import own modules
-import replay
-import seed
 import support
 from linker import Map
 from patchfile import PatchFile
@@ -22,19 +20,8 @@ def core(base_data, div_path, seeds, patchfile):
     ####################################################################################################
     # Replay the different protections for which we have the seed.
     ####################################################################################################
-    (sp_seed, fs_seed, nop_seed) = support.get_seeds_from_tuple(seeds, seed.SPSeed, seed.FSSeed, seed.NOPSeed)
-
-    if sp_seed:
-        print('************ Replaying stack padding. **********')
-        replay.replay_sp(base_symfile, sp_seed, base_data)
-
-    if fs_seed:
-        print('************ Replaying function shuffling. **********')
-        replay.replay_fs(base_symfile, fs_seed)
-
-    if nop_seed:
-        print('************ Replaying NOP insertion. **********')
-        replay.replay_nop(base_symfile, nop_seed, base_data)
+    for seed in [seed for seed in seeds if seed]:
+        seed.replay(base_symfile, base_data)
 
     ####################################################################################################
     # Handle the patch part: either we have a patch to apply, or we have to create one.
