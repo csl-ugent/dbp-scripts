@@ -48,4 +48,4 @@ for subset in support.subsets_gen(seed.get_types(), False):
 
 # Create the report book and write it out
 report = pyexcel.Book(sheets=sheets)
-report.save_as(os.path.join(config.base_dir, 'report.ods'))
+report.save_as(config.report_file)
