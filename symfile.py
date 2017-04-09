@@ -1,6 +1,7 @@
 import os
 
 # Import own modules
+import linker
 from operator import attrgetter
 from support import hex_int
 from support import hex_str
@@ -91,6 +92,18 @@ class Function:
 
     def add_line_record(self, line):
         self.lines.append(Line(line))
+
+    # Augment the function with section information (such as alignment). If no section was provided,
+    # use default values.
+    def augment(self, section, build_dir):
+        if section:
+            self.alignment = section.alignment
+            self.section_size = section.size
+            self.section_name = os.path.join(build_dir, section.obj) + ':' + section.name
+        else:
+            self.alignment = 4
+            self.section_size = self.size
+            self.section_name = None
 
     # Get the stack record containing the stack offset
     def get_stack_offset_record(self):
@@ -250,24 +263,28 @@ class SymFile:
     # Augment the symfile with information from the linkermap
     def augment(self, linkermap, build_dir):
         # Determine how many of each kind of functions there are
-        self.nr_of_pre_funcs = len(linkermap.pre_sections)
+        for iii, func in enumerate(self.funcs):
+            if linkermap.shuffle_sections[0].address <= (func.address + 0x8000):
+                self.nr_of_pre_funcs = iii
+                break
+
         self.nr_of_shuffle_funcs = len(linkermap.shuffle_sections)
         self.nr_of_post_funcs = len(self.funcs) - self.nr_of_shuffle_funcs - self.nr_of_pre_funcs
 
-        # For the pre functions we have section information, copy it over to the functions
-        for (func, section) in zip(self.funcs[:self.nr_of_pre_funcs], linkermap.pre_sections):
-            func.alignment = section.alignment
-            func.section_size = section.size
-            func.section_name = os.path.join(build_dir, section.obj) + ':' + section.name
+        # For the pre functions we can't be certain to have section information. This is because
+        # -ffunction-sections doesn't always work for initializers. Try to find the corresponding
+        # section and copy its values, but if it doesn't exist just use defaults.
+        for func in self.funcs[:self.nr_of_pre_funcs]:
+            func_section = linker.find_section_for_function(func, linkermap.pre_sections)
+            func.augment(func_section, build_dir)
 
         # For the shuffle functions we have section information, copy it over to the functions.
         for (func, section) in zip(self.funcs[self.nr_of_pre_funcs:-self.nr_of_post_funcs], linkermap.shuffle_sections):
-            func.alignment = section.alignment
-            func.section_size = section.size
-            func.section_name = os.path.join(build_dir, section.obj) + ':' + section.name
+            func.augment(section, build_dir)
 
-        # For the functions at the end, there was no ffunction-sections. Therefore, with possibly multiple functions in a section, we have no information
-        # on function alignment/size and will use defaults. We will attempt to determine offsets though from the previous function though.
+        # For the functions at the end, there was no ffunction-sections. Therefore, with possibly multiple functions in a section, we're
+        # forced to start searcing the corresponding section. If it doesn't exist, we'll use defaults.
+        # We will attempt to determine offsets though from the previous function though.
         if self.nr_of_post_funcs:
             # Get the address at the end of the last shuffled section
             address = self.funcs[-self.nr_of_post_funcs -1].address + linkermap.shuffle_sections[-1].size
@@ -276,22 +293,9 @@ class SymFile:
                 func.offset = func.address - address
                 address = func.address
 
-                # Try to find the corresponding section (can't be found for crtbegin objects for example) and use
-                # its information. If we can't find it, use some default values.
-                func_section = None
-                for section in linkermap.post_sections:
-                    if section.name == '.text.' + ' '.join(func.name):
-                        func_section = section
-                        break
-
-                if func_section:
-                    func.alignment = func_section.alignment
-                    func.section_size = func_section.size
-                    func.section_name = os.path.join(build_dir, func_section.obj) + ':' + func_section.name
-                else:
-                    func.alignment = 4
-                    func.section_size = func.size
-                    func.section_name = None
+                # Attempt to find the corresponding section and copy its values.
+                func_section = linker.find_section_for_function(func, linkermap.post_sections)
+                func.augment(func_section, build_dir)
 
     # Return the Function that is at this address, or None if nothing is found
     def get_func_by_address(self, address):

@@ -145,3 +145,10 @@ def create_linker_script(sections):
 
         # Write the second part
         f.write(ld2.read())
+
+# Try to find the corresponding section if we can (can't be found for crtbegin objects for example).
+def find_section_for_function(func, sections):
+    for section in sections:
+        if section.name == '.text.' + ' '.join(func.name):
+            return section
+    return None
