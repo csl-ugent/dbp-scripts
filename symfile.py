@@ -1,6 +1,7 @@
 import os
 
 # Import own modules
+import config
 import linker
 from operator import attrgetter
 from support import hex_int
@@ -264,7 +265,7 @@ class SymFile:
     def augment(self, linkermap, build_dir):
         # Determine how many of each kind of functions there are
         for iii, func in enumerate(self.funcs):
-            if linkermap.shuffle_sections[0].address <= (func.address + 0x8000):
+            if linkermap.shuffle_sections[0].address <= (func.address + config.base_address):
                 self.nr_of_pre_funcs = iii
                 break
 

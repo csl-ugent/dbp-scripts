@@ -82,5 +82,5 @@ def create_updated_symfile(binary, listing_path, f_out):
         symfile = SymFile.read(f_tmp)
 
     # Update the symfile using the instruction listing and write it out
-    update_symfile_with_listing(symfile, listing_path, 0x8000, 0x8000)
+    update_symfile_with_listing(symfile, listing_path, config.base_address, config.base_address)
     symfile.write(f_out)
