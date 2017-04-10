@@ -4,6 +4,7 @@ import os
 import shlex
 import shutil
 import subprocess
+import sys
 from string import Template
 
 # Import own modules
@@ -77,7 +78,7 @@ if not os.path.exists(config.spec_dir):
 # Start by compiling for the default binaries
 print('************ Building default binaries... **********')
 install_dict['install_options'] = '-r'
-compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.default_padding)]
+compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.default_padding)] + sys.argv[1:]
 extra_options = build_extra('0', compile_options)
 install_dict['compile_options'] = ' '.join(compile_options + extra_options)
 install_dict['spec_config_name'] = spec_config_name
@@ -89,7 +90,7 @@ print('************ Build finished. **********')
 for sp_seed, in support.seeds_gen(seed.SPSeed):
     print('************ Building stackpadded binary for seed ' + str(sp_seed) + '... **********')
     # Adapt the arguments so that now we use the real max padding and add random padding
-    compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.max_padding) + ' -mllvm -padseed=' + str(sp_seed)]
+    compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.max_padding) + ' -mllvm -padseed=' + str(sp_seed)] + sys.argv[1:]
     extra_options = build_extra(str(sp_seed), compile_options)
     install_dict['compile_options'] = ' '.join(compile_options + extra_options)
     s2r_dict['target_dir'] = support.create_path_for_seeds(config.build_dir, sp_seed)

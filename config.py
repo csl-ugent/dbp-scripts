@@ -5,7 +5,7 @@ import sys
 
 # Parameters
 base_address = 0x8000
-binary_options = '-ffunction-sections -g -mcpu=cortex-a8 -marm -O2' # These are general compile options for code that is to go into the protected binary
+binary_options = '-ffunction-sections -g -mcpu=cortex-a8 -marm' # These are general compile options for code that is to go into the protected binary
 default_padding = 8
 max_padding = 256
 max_seed = 1000000
@@ -31,6 +31,7 @@ data_dir = os.path.join(base_dir, 'data')
 log_file = os.path.join(base_dir, 'errors')
 patches_dir = os.path.join(base_dir, 'patches')
 reports_dir = os.path.join(base_dir, 'reports')
+results_dir = os.path.join(base_dir, 'results')
 tmp_dir = os.path.join(base_dir, 'tmp')
 link_script = os.path.join(tmp_dir, 'link.xc')
 seed_file = os.path.join(base_dir, 'seeds.txt')
