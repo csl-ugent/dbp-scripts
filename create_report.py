@@ -28,7 +28,10 @@ for subset in support.subsets_gen(seed.get_types(), False):
         # Get all the sizes of the patches
         for benchmark, _ in support.benchmarks_gen():
             patch = os.path.join(support.create_path_for_seeds(config.patches_dir, *seed_tuple), benchmark, 'patch')
-            sizes.append(os.stat(patch).st_size)
+            if os.path.exists(patch):
+                sizes.append(os.stat(patch).st_size)
+            else:
+                sizes.append('FAIL')
 
         # Empty cell
         sizes.append('')
@@ -36,15 +39,19 @@ for subset in support.subsets_gen(seed.get_types(), False):
         # Get all the sizes of the compressed patches
         for benchmark, _ in support.benchmarks_gen():
             patch = os.path.join(support.create_path_for_seeds(config.patches_dir, *seed_tuple), benchmark, 'patch.bz2')
-            sizes.append(os.stat(patch).st_size)
+            if os.path.exists(patch):
+                sizes.append(os.stat(patch).st_size)
+            else:
+                sizes.append('FAIL')
 
         sheet.column += sizes
 
     # Calculate in the average and the max
     for row in (row for row in sheet.rows() if not row[0].startswith('Patches')):
-        sizes = row[3:]
-        row[1] = int(sum(sizes) / len(sizes))
-        row[2] = max(sizes)
+        sizes = [elem for elem in row[3:] if isinstance(elem, int)]
+        if sizes:
+            row[1] = int(sum(sizes) / len(sizes))
+            row[2] = max(sizes)
 
 # Create the report book and write it out
 report = pyexcel.Book(sheets=sheets)
