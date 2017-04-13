@@ -391,6 +391,13 @@ class SymFile:
                 else:
                     self.unassociated_stacks.append(stack)
 
+        # Check for duplicate stack records, as these will make correct patch creation and verification impossible
+        for func in self.funcs:
+            records = {}
+            for stack in func.stacks:
+                assert stack.address not in records, 'Duplicate stack record! We do not support this.'
+                records[stack.address] = stack
+
         # Associate all publics to lines (except for those with negative addresses).
         for public in (public for public in self.publics if public.address < 0x8000000):
             func = self.get_func_public(public.address)
