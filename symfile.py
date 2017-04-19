@@ -329,13 +329,13 @@ class SymFile:
 
     # The constructor to create a SymFile by reading it in from a path
     @classmethod
-    def read_f(cls, path):
+    def read_f(cls, path, correct=True):
         with open(path, 'r') as f:
-            return cls.read(f)
+            return cls.read(f, correct)
 
     # The constructor to create a SymFile by reading it in from a file
     @classmethod
-    def read(cls, f):
+    def read(cls, f, correct=True):
         self = cls()
         for line in f:
             # Get the type of this record
@@ -392,11 +392,12 @@ class SymFile:
                     self.unassociated_stacks.append(stack)
 
         # Check for duplicate stack records, as these will make correct patch creation and verification impossible
-        for func in self.funcs:
-            records = {}
-            for stack in func.stacks:
-                assert stack.address not in records, 'Duplicate stack record! We do not support this.'
-                records[stack.address] = stack
+        if correct:
+            for func in self.funcs:
+                records = {}
+                for stack in func.stacks:
+                    assert stack.address not in records, 'Duplicate stack record! We do not support this.'
+                    records[stack.address] = stack
 
         # Associate all publics to lines (except for those with negative addresses).
         for public in (public for public in self.publics if public.address < 0x8000000):

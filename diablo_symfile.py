@@ -79,7 +79,7 @@ def update_symfile_with_listing(symfile, listing_path, old_base, new_base):
 def create_updated_symfile(binary, listing_path, f_out):
     # Dump the symfile from the binary and read it into a SymFile
     with io.StringIO(subprocess.check_output([config.dump_syms, binary], stderr=subprocess.DEVNULL, universal_newlines=True)) as f_tmp:
-        symfile = SymFile.read(f_tmp)
+        symfile = SymFile.read(f_tmp, False)
 
     # Update the symfile using the instruction listing and write it out
     update_symfile_with_listing(symfile, listing_path, config.base_address, config.base_address)
