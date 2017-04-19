@@ -70,6 +70,7 @@ class Function:
         # Data will be added onto these later on
         self.publics = []
         self.stacks = []
+        self.stack_init = None
 
     def __eq__(self, other):
         if self.address != other.address:
@@ -379,7 +380,7 @@ class SymFile:
             # is found this means it corresponds to one of the unnamed post functions.
             if stack.size:
                 func = self.get_func_by_address(stack.address)
-                if func:
+                if func and not func.stack_init:
                     func.stack_init = stack
                 else:
                     self.unassociated_stacks.append(stack)
