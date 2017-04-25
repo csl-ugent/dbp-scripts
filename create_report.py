@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-import pyexcel
 import os
+import pyexcel
 
 # Import own modules
 import config

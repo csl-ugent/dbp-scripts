@@ -3,7 +3,6 @@ import concurrent.futures
 import logging
 import os
 import shutil
-import sys
 
 # Import own modules
 import config
