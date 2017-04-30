@@ -14,6 +14,8 @@ support.generate_seeds(config.nr_of_measurements, config.root_seed)
 print('************ Creating subdirectories **********')
 if not os.path.exists(config.tmp_dir):
     os.mkdir(config.tmp_dir)
+if not os.path.exists(config.reports_dir):
+    os.mkdir(config.reports_dir)
 
 # Generate helper tools
 print('************ Making replay tools **********')

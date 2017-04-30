@@ -8,7 +8,7 @@ import seed
 import support
 
 # Create the report
-print('************ Creating report **********')
+print('************ Creating report on patch sizes **********')
 sheets = {}
 for subset in support.subsets_gen(seed.get_types(), False):
     # Create the sheet for this subset and put it in the dictionary
@@ -24,7 +24,7 @@ for subset in support.subsets_gen(seed.get_types(), False):
     for seed_tuple in support.seeds_gen(*subset):
         # Empty cell
         sizes = ['']
-        
+
         # Get all the sizes of the patches
         for benchmark, _ in support.benchmarks_gen():
             patch = os.path.join(support.create_path_for_seeds(config.patches_dir, *seed_tuple), benchmark, 'patch')
@@ -55,4 +55,4 @@ for subset in support.subsets_gen(seed.get_types(), False):
 
 # Create the report book and write it out
 report = pyexcel.Book(sheets=sheets)
-report.save_as(config.report_file)
+report.save_as(os.path.join(config.reports_dir, 'patch_sizes.ods'))
