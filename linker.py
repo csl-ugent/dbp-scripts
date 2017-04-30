@@ -45,7 +45,7 @@ def gather_section_alignment(map_path, output_file):
 
 class Section:
     """A class representing a section in a map"""
-    def __init__(self, f_map, line, align_lines):
+    def __init__(self, f_map, line, alignment_info):
         tokens = line.split()
 
         self.name = tokens[0]
@@ -65,27 +65,51 @@ class Section:
             self.obj = tokens[3]
 
         # If we can find the alignment, try to do so
-        if align_lines is not None:
-            searching = False
-            for align_line in align_lines:
-                # Check if this is an object (part of an archive or not) in which we should be searching.
-                if align_line.endswith('.o') or align_line.endswith('.o)'):
-                    searching = self.obj in align_line
+        if alignment_info is not None:
+            for obj in alignment_info.objects:
+                if self.obj in obj.name:
+                    for section in obj.sections:
+                        if self.name == section.name:
+                            self.alignment = section.alignment
+                            return
 
-                elif searching:
-                    tokens = align_line.split()
-                    if tokens[0] == self.name:
-                        self.alignment = int(tokens[1])
+class AlignmentSection:
+    """A class representing the alignment information for a section"""
+    def __init__(self, name, alignment):
+        self.name = name
+        self.alignment = alignment
+
+class AlignmentObject:
+    """A class representing the alignment information for an object"""
+    def __init__(self, name):
+        self.name = name
+        self.sections = []
+
+class AlignmentInformation:
+    """A class representing the alignment information for a binary"""
+    def __init__(self, align_path):
+        self.objects = []
+
+        with open(align_path, 'r') as f_align:
+            align_lines = f_align.read().splitlines()
+
+        for align_line in align_lines:
+            # Check if this is an object (part of an archive or not)
+            if align_line.endswith('.o') or align_line.endswith('.o)'):
+                self.objects.append(AlignmentObject(align_line))
+            # Otherwise it's a line to be part of the current object
+            else:
+                tokens = align_line.split()
+                self.objects[-1].sections.append(AlignmentSection(tokens[0], int(tokens[1])))
 
 class Map:
     """A class representing a map"""
     def __init__(self, map_path, align_path):
         # Load all section alignment information if it is present
         if align_path is not None:
-            with open(align_path, 'r') as f_align:
-                align_lines = f_align.read().splitlines()
+            alignment_info = AlignmentInformation(align_path)
         else:
-            align_lines = None
+            alignment_info = None
 
         with open(map_path, 'r') as f_map:
             self.discarded_sections = []
@@ -129,7 +153,7 @@ class Map:
                 if '.text' in line and not '*' in line:
                     # Handle the line depending on where we are in the map
                     # Decode the entry into an object
-                    target_sections.append(Section(f_map, line, align_lines))
+                    target_sections.append(Section(f_map, line, alignment_info))
 
 # Creates a linker script in which the text sections passed as an argument are placed in explicit order. If no sections are given, creates the default linker script.
 def create_linker_script(sections):
