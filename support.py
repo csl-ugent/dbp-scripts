@@ -56,14 +56,13 @@ def find_first_uppercase(x):
 
 # Generator for all the benchmark names
 def benchmarks_gen():
-    for benchmark in ['400.perlbench','401.bzip2','403.gcc','429.mcf','433.milc','444.namd','445.gobmk','450.soplex','456.hmmer','458.sjeng','462.libquantum','464.h264ref','470.lbm','471.omnetpp','473.astar','482.sphinx3','483.xalancbmk','998.specrand']:
+    for benchmark in ['400.perlbench','401.bzip2','403.gcc','429.mcf','433.milc','444.namd','445.gobmk','450.soplex','453.povray','456.hmmer','458.sjeng','462.libquantum','464.h264ref','470.lbm','471.omnetpp','473.astar','482.sphinx3','483.xalancbmk','998.specrand']:
         name = benchmark.split('.')[1]
         if benchmark == '482.sphinx3':
             name = 'sphinx_livepretend'
-        if benchmark == '483.xalancbmk':
+        elif benchmark == '483.xalancbmk':
             name = 'Xalan'
-            continue
-        if benchmark == '998.specrand':
+        elif benchmark == '998.specrand':
             continue
         yield (benchmark, name)
 
