@@ -19,7 +19,6 @@ int main(int argc, char** argv) {
   const uint32_t padding = std::stoul(argv[2]);
   const std::string& build_prefix = argv[3];
   std::uniform_int_distribution<unsigned> distribution(1, padding/8);
-  std::unordered_map<std::string, std::mt19937> generators;
 
   /* Open file and read line per line */
   std::ifstream input(argv[4]);
@@ -31,8 +30,7 @@ int main(int argc, char** argv) {
     iss >> filename >> function_name;
 
     /* Get the generator for this filename (only constructed the first time, so the seeds are generated correctly) */
-    std::string hash_str = (filename.find_last_of('/') != std::string::npos) ? filename.substr(1 + filename.find_last_of('/')) : filename;
-    std::mt19937& generator = generators.emplace(filename, std::mt19937((unsigned)seed ^ llvm::hash_value(hash_str))).first->second;
+    std::mt19937 generator(((unsigned)seed) ^ llvm::hash_value(function_name));
 
     /* Generate the offset */
     unsigned stack_offset = distribution(generator) * 8;
