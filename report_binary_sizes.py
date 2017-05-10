@@ -47,7 +47,7 @@ for seeds in support.seeds_gen():
 for row in (row for row in sheet.rows() if not row[0].startswith('Binary')):
     sizes = [elem for elem in row[3:] if isinstance(elem, int)]
     if sizes:
-        row[1] = int(sum(sizes) / len(sizes))
+        row[1] = sum(sizes) // len(sizes)
         row[2] = max(sizes)
 
 # Create the report book and write it out
