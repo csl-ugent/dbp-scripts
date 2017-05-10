@@ -68,22 +68,15 @@ class Section:
         if alignment_info is not None:
             for obj in alignment_info.objects:
                 if self.obj in obj.name:
-                    for section in obj.sections:
-                        if self.name == section.name:
-                            self.alignment = section.alignment
-                            return
-
-class AlignmentSection:
-    """A class representing the alignment information for a section"""
-    def __init__(self, name, alignment):
-        self.name = name
-        self.alignment = alignment
+                    self.alignment = obj.sections.get(self.name, None)
+                    if self.alignment:
+                        return
 
 class AlignmentObject:
     """A class representing the alignment information for an object"""
     def __init__(self, name):
         self.name = name
-        self.sections = []
+        self.sections = {}
 
 class AlignmentInformation:
     """A class representing the alignment information for a binary"""
@@ -98,9 +91,10 @@ class AlignmentInformation:
             if align_line.endswith('.o') or align_line.endswith('.o)'):
                 self.objects.append(AlignmentObject(align_line))
             # Otherwise it's a line to be part of the current object
+            # Keep the section information in a dictionary
             else:
                 tokens = align_line.split()
-                self.objects[-1].sections.append(AlignmentSection(tokens[0], int(tokens[1])))
+                self.objects[-1].sections[tokens[0]] = int(tokens[1])
 
 class Map:
     """A class representing a map"""
