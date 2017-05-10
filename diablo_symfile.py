@@ -67,6 +67,8 @@ def update_symfile_with_listing(symfile, listing_path, old_base, new_base):
             for stack in func.stacks:
                 symfile.stacks.remove(stack)
 
+    symfile.funcs = new_funcs
+
     # Update the addresses of the unassociated public and stack records
     for public in symfile.unassociated_publics:
         public.address = mapping[public.address]
