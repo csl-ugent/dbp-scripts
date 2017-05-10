@@ -70,20 +70,22 @@ class Function:
         # Data will be added onto these later on
         self.publics = []
         self.stacks = []
-        self.stack_init = None
 
+    # Compares everything, including the name
     def __eq__(self, other):
+        if self.name != other.name:
+            return False
+        return self.syntactic_compare(other)
+
+    # Compares everything but the name: only the structure of the function is compared
+    def syntactic_compare(self, other):
         if self.address != other.address:
             return False
         if self.size != other.size:
             return False
         if self.parameter_size != other.parameter_size:
             return False
-        if self.name != other.name:
-            return False
         if self.lines != other.lines:
-            return False
-        if self.stack_init != other.stack_init:
             return False
         if self.stacks != other.stacks:
             return False
@@ -109,7 +111,7 @@ class Function:
 
     # Get the stack record containing the stack offset
     def get_stack_offset_record(self):
-        for stack in reversed(self.stacks):
+        for stack in reversed(self.stacks[1:]):
             # Check whether the signature of the entry matches and if it does, return it
             if len(stack.entries) == 4 and stack.entries[0] == '.cfa:' and stack.entries[1] == 'sp' and stack.entries[3] == '+':
                 return stack
@@ -133,14 +135,19 @@ class Function:
         for line in self.lines:
             line.update_address(offset)
 
+    # Updates all the meta records
     def update_meta_records(self, offset):
-        # Set the information for the STACK CFI INIT record
-        self.stack_init.address = self.address
-        self.stack_init.size = self.size
+        if self.stacks:
+            # Set the information for the STACK CFI INIT record
+            stack_init = self.stacks[0]
+            stack_init.address = self.address
+            stack_init.size = self.size
 
-        # Add the offset for all stack records and public records
-        for stack in self.stacks:
-            stack.address = stack.address + offset
+            # Update the other stack records
+            for stack in self.stacks[1:]:
+                stack.address = stack.address + offset
+
+        # Update the public records
         for public in self.publics:
             public.address = public.address + offset
 
@@ -219,8 +226,12 @@ class SymFile:
         self.files = []
         self.funcs = []
         self.publics = []
-        self.unassociated_publics = []
         self.stacks = []
+
+        # Data will be added to these records, but they're not necessarily written out in the
+        # new symfile. This doesn't happen for (often duplicate) stack records anymore, and
+        # might not happen in the future for publics anymore either.
+        self.unassociated_publics = []
         self.unassociated_stacks = []
 
     def __eq__(self, other):
@@ -259,7 +270,8 @@ class SymFile:
         func_str = ''.join([str(func) for func in self.funcs])
         self.publics.sort(key=attrgetter('address'))
         public_str = '\n'.join([str(public) for public in self.publics]) + '\n'
-        stack_str = '\n'.join([str(stack) for stack in self.stacks]) + '\n'
+        # Get every stack record for every function
+        stack_str = '\n'.join([str(stack) for func in self.funcs for stack in func.stacks]) + '\n'
         return res + file_str + func_str + public_str + stack_str
 
     # Augment the symfile with information from the linkermap
@@ -338,13 +350,13 @@ class SymFile:
 
     # The constructor to create a SymFile by reading it in from a path
     @classmethod
-    def read_f(cls, path, correct=True):
+    def read_f(cls, path):
         with open(path, 'r') as f:
-            return cls.read(f, correct)
+            return cls.read(f)
 
     # The constructor to create a SymFile by reading it in from a file
     @classmethod
-    def read(cls, f, correct=True):
+    def read(cls, f):
         self = cls()
         for line in f:
             # Get the type of this record
@@ -379,34 +391,46 @@ class SymFile:
             else:
                 self.funcs[-1].add_line_record(line)
 
-        # Sort the functions by address
+        # Remove duplicate FUNC records if they are completely the same. If there are FUNC records on the same address
+        # that differ in anything else but their name (because of <unnamed> vs real names issue) the symfile is malformed
+        # and we end it here.
+        records = {}
+        for func in self.funcs:
+            if func.address not in records:
+                records[func.address] = func
+            else:
+                assert records[func.address].syntactic_compare(func), 'Two FUNC records with the same address but differing contents!'
+
+        # Get the functions from the dictionary and sort them by value
+        self.funcs = [func for func in records.values()]
         self.funcs.sort(key=attrgetter('address'))
 
         # Associate all stack records to lines or functions (except for those with negative addresses).
+        records = {}
         for stack in (stack for stack in self.stacks if stack.address < 0x8000000):
-            # If it's an INIT record we should be able to associate it to a function. If None
-            # is found this means it corresponds to one of the unnamed post functions.
+            # If it's an INIT record we should be able to associate it to a function.
             if stack.size:
                 func = self.get_func_by_address(stack.address)
-                if func and not func.stack_init:
-                    func.stack_init = stack
+                if func:
+                    # The INIT record should be the first element in the stacks list
+                    if not func.stacks:
+                        func.stacks.append(stack)
+                    else:
+                        assert func.stacks[0] == stack, 'Two STACK INIT records with the same address but differing contents!'
                 else:
                     self.unassociated_stacks.append(stack)
             else:
                 # Try to find the function that contains the stack record's address.
                 func = self.get_func_containing_address(stack.address)
                 if func:
-                    func.stacks.append(stack)
+                    assert func.stacks, 'Trying to add a normal STACK record where no INIT record is present yet!'
+                    if stack.address not in records:
+                        func.stacks.append(stack)
+                        records[stack.address] = stack
+                    else:
+                        assert records[stack.address] == stack, 'Two STACK records with the same address but differing contents!'
                 else:
                     self.unassociated_stacks.append(stack)
-
-        # Check for duplicate stack records, as these will make correct patch creation and verification impossible
-        if correct:
-            for func in self.funcs:
-                records = {}
-                for stack in func.stacks:
-                    assert stack.address not in records, 'Duplicate stack record! We do not support this.'
-                    records[stack.address] = stack
 
         # Associate all publics to lines (except for those with negative addresses).
         for public in (public for public in self.publics if public.address < 0x8000000):
