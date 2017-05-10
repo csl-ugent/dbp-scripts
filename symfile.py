@@ -301,24 +301,32 @@ class SymFile:
 
     # Return the Function that is at this address, or None if nothing is found
     def get_func_by_address(self, address):
-        for func in self.funcs:
-            if func.address == address:
-                return func
-
-        return None
+        func = self.get_func_containing_address(address)
+        if func and func.address == address:
+            return func
+        else:
+            return None
 
     def get_func_containing_address(self, address):
-        for func in self.funcs:
-            if func.address <= address and address < (func.address + func.size):
+        first = 0
+        last = len(self.funcs) -1
+        while first <= last:
+            index = (first + last)//2
+            func = self.funcs[index]
+            if address < func.address:
+                last = index -1
+            elif address >= (func.address + func.size):
+                first = index +1
+            else:
                 return func
 
         return None
 
     # Return the Function associated with a public symbol's address
     def get_func_public(self, address):
-        for func in self.funcs:
-            if func.address <= address and address < (func.address + func.size):
-                return func
+        func = self.get_func_containing_address(address)
+        if func:
+            return func
 
         # The line might be before the first function or behind the last function. If it's
         # before the first function we can return None as this address does not have to be updated.
