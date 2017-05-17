@@ -65,4 +65,4 @@ spec2regression_script = os.path.join(regression_dir, 'speccpu2006', 'spec2regre
 # Compiling options for tools
 breakpad_options = '-Wl,--library=stdc++ -Wl,--library=atomic -Wl,--library=pthread -Wl,--library=:' + os.path.join(dump_dir, 'dump.o') # The options required to link with the breakpad client
 clang_options = '-isysroot ' + os.path.join(gcc_toolchain_dir, target_triple, 'sysroot') + ' -no-integrated-as -gcc-toolchain ' + gcc_toolchain_dir + ' -ccc-gcc-name ' + target_triple + ' -target ' + target_triple # Extra options for clang, to make it use the gcc backend
-diablo_options = '-Z -kco -exidx --no-merge-exidx'
+diablo_options = '-Z -kco -exidx --no-merge-exidx --no-movw-movt-producers'
