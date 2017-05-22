@@ -56,13 +56,17 @@ def extract_data(seed_tuple, subset):
     except Exception:
         logging.getLogger().exception('Data extraction failed for ' + relpath)
 
-# Start with destroying the previous directory structure, if it exists
-shutil.rmtree(config.data_dir, True)
+def main():
+    # Start with destroying the previous directory structure, if it exists
+    shutil.rmtree(config.data_dir, True)
 
-# Get the seeds and extract the data for the associated build
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    for seed_tuple in support.seeds_gen():
-        for subset in support.subsets_gen(seed_tuple, False):
-            executor.submit(extract_data, seed_tuple, subset)
+    # Get the seeds and extract the data for the associated build
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        for seed_tuple in support.seeds_gen():
+            for subset in support.subsets_gen(seed_tuple, False):
+                executor.submit(extract_data, seed_tuple, subset)
 
-    executor.submit(extract_data, seed_tuple, ())
+        executor.submit(extract_data, seed_tuple, ())
+
+if __name__ == '__main__':
+    main()

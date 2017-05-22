@@ -29,13 +29,17 @@ def create_patch(benchmark, seeds):
     except Exception:
         logging.getLogger().exception('Patch creation failed for ' + patch_dir)
 
-# Start with destroying the previous directory structure, if it exists
-shutil.rmtree(config.patches_dir, True)
+def main():
+    # Start with destroying the previous directory structure, if it exists
+    shutil.rmtree(config.patches_dir, True)
 
-# Create the patches by submitting tasks to the executor
-print('************ Creating patches **********')
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    for seed_tuple in support.seeds_gen():
-        for subset in support.subsets_gen(seed_tuple, False):
-            for (benchmark, _) in support.benchmarks_gen():
-                executor.submit(create_patch, benchmark, subset)
+    # Create the patches by submitting tasks to the executor
+    print('************ Creating patches **********')
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        for seed_tuple in support.seeds_gen():
+            for subset in support.subsets_gen(seed_tuple, False):
+                for (benchmark, _) in support.benchmarks_gen():
+                    executor.submit(create_patch, benchmark, subset)
+
+if __name__ == '__main__':
+    main()

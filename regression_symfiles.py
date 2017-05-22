@@ -144,16 +144,20 @@ def regression_test(tmp_dir, benchmark, name, bkpt_seed):
             else:
                 print('Identical stacktraces for ' + name + ' nop_seed ' + str(nop_seed) + ' bkpt_seed ' + str(bkpt_seed))
 
-# The subdirectory within the tmp directory we'll use for our regression testing, clean it up from previous runs.
-tmp_dir = os.path.join(config.tmp_dir, 'nop_test')
-shutil.rmtree(tmp_dir, True)
-os.makedirs(tmp_dir)
+def main():
+    # The subdirectory within the tmp directory we'll use for our regression testing, clean it up from previous runs.
+    tmp_dir = os.path.join(config.tmp_dir, 'nop_test')
+    shutil.rmtree(tmp_dir, True)
+    os.makedirs(tmp_dir)
 
-# We'll test only symfiles generated for NOP insertion on base binaries, for a maximum
-# number of seeds.
-spec_conf = os.path.join(support.create_path_for_seeds(config.build_dir), 'spec2006_test.conf')
-max_seed = 9999
+    # We'll test only symfiles generated for NOP insertion on base binaries, for a maximum
+    # number of seeds.
+    spec_conf = os.path.join(support.create_path_for_seeds(config.build_dir), 'spec2006_test.conf')
+    max_seed = 9999
 
-for bkpt_seed in range(1, max_seed):
-    for (benchmark, name) in support.benchmarks_gen():
-        regression_test(tmp_dir, benchmark, name, bkpt_seed)
+    for bkpt_seed in range(1, max_seed):
+        for (benchmark, name) in support.benchmarks_gen():
+            regression_test(tmp_dir, benchmark, name, bkpt_seed)
+
+if __name__ == '__main__':
+    main()
