@@ -45,7 +45,7 @@ def gather_section_alignment(map_path, output_file):
 
 class Section:
     """A class representing a section in a map"""
-    def __init__(self, f_map, line, alignment_info):
+    def __init__(self, f_map, line, alignment_info = None):
         tokens = line.split()
 
         self.name = tokens[0]
@@ -98,7 +98,7 @@ class AlignmentInformation:
 
 class Map:
     """A class representing a map"""
-    def __init__(self, map_path, align_path):
+    def __init__(self, map_path, align_path = None):
         # Load all section alignment information if it is present
         if align_path is not None:
             alignment_info = AlignmentInformation(align_path)
