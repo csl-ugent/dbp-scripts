@@ -33,6 +33,8 @@ Reports on the generated data in the ODS format are then generated using these s
 - report_symfile_sizes.py: The sizes of the symfiles for the default and fully diversified binaries.
 
 Some other scripts of note are:
+- measure_defaults.py: Can be used to generate a lot of measurements on the default binaries with the breakpad client but without any protections.
+- measure_sp_function_sizes.py: Can be used to measure the increase/decrease in function sizes for different amounts of stack padding.
 - patch.py: Can be used to create individual patches between symfiles.
 - regression_binaries.py: Regression tests the protected binaries.
 - regression_symfiles.py: Regression tests the symfiles generated for binaries rewritten by Diablo.
