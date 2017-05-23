@@ -40,7 +40,7 @@ def core(base_data, div_path, seeds, patchfile):
 
 # This function checks the arguments. It exists so that the script's functionality can be invoked both from the command line as
 # from another python script.
-def patch(base_data, seeds, div_symfile_path=None, patch_path=None, output_dir=None):
+def patch(base_data, seeds, div_symfile_path=None, patch_path=None, output_dir=None, verbose=False):
     # Determine the mode of operation. If we are given a patch we should test it, if not we should generate one.
     if patch_path:
         if div_symfile_path:
@@ -73,7 +73,7 @@ def patch(base_data, seeds, div_symfile_path=None, patch_path=None, output_dir=N
 
         # Generate the actual patch
         patch = core(base_data, div_symfile_path, seeds, None)
-        patch.write(os.path.join(output_dir, 'patch'))
+        patch.write(os.path.join(output_dir, 'patch'), verbose)
         print('************ Patch generated. **********')
 
     return True
@@ -86,8 +86,9 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--diversified_symfile', help='The path to the diversified symfile.')
     parser.add_argument('-p', '--patch', help='The path to the patch.')
     parser.add_argument('-o', '--output_directory', help='The directory where outputs will be written.')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Create a verbose patch.')
     args = parser.parse_args()
 
     # Call the patch function and have a different exit value depending on its result
-    res = patch(args.base_data, args.seeds, args.diversified_symfile, args.patch, args.output_directory)
+    res = patch(args.base_data, args.seeds, args.diversified_symfile, args.patch, args.output_directory, args.verbose)
     sys.exit(0 if res else 1)
