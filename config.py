@@ -38,9 +38,11 @@ seed_file = os.path.join(base_dir, 'seeds.txt')
 spec_dir = os.path.join(base_dir, 'spec2006')
 
 # Error logging, log everything to the same file.
-logger = logging.getLogger()
-fh = logging.FileHandler(log_file)
-logger.addHandler(fh)
+def init_logging():
+    logger = logging.getLogger()
+    fh = logging.FileHandler(log_file)
+    logger.addHandler(fh)
+init_logging()
 
 # Paths for repositories/tools we use
 breakpad_dir =
