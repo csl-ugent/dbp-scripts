@@ -66,10 +66,11 @@ def build(target_dir, compile_options, spec_config_name, initial_build=False):
         install_d['spec_config_name'] = spec_config_name
         subprocess.check_call(shlex.split(install_cmd.substitute(install_d)))
 
-        s2r_d = s2r_dict.copy()
-        s2r_d['spec_config_name'] = spec_config_name
-        s2r_d['target_dir'] = target_dir
-        subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_d)))
+        if target_dir:
+            s2r_d = s2r_dict.copy()
+            s2r_d['spec_config_name'] = spec_config_name
+            s2r_d['target_dir'] = target_dir
+            subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_d)))
 
 ####################################################################################################
 # First diversification form - stackpadding. The benchmarks are compiled using the patched LLVM.
