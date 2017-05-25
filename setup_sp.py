@@ -39,7 +39,8 @@ s2r_dict = {
 # Builds all extra source code (such as the breakpad client archive) with the requested options. Returns the extra
 # compile options that are required to link with the resulting objects/archives.
 def build_extra(build_dir, compile_options):
-    # Create the build directory
+    # Create the build directory (after cleaning up possible previous run)
+    shutil.rmtree(build_dir, True)
     os.mkdir(build_dir)
     ret_options = [config.breakpad_options]
 
