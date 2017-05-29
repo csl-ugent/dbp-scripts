@@ -1,4 +1,4 @@
-CPPFLAGS ?= -g -Wall -Werror
+CPPFLAGS ?= -g -Wall -Werror -O3 -fomit-frame-pointer -march=native
 CXXFLAGS ?= -std=c++0x
 
 # Get LLVM stuff for SP
