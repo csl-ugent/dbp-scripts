@@ -6,6 +6,7 @@ import sys
 base_address = 0x8000
 binary_options = '-ffunction-sections -g -mcpu=cortex-a8 -marm' # These are general compile options for code that is to go into the protected binary
 default_padding = 8
+gpg_passphrase = 'breakpad_pass'
 max_padding = 256
 max_seed = 1000000
 nop_chance = 20
@@ -27,6 +28,7 @@ extra_build_dir = os.path.join(base_dir, 'extra_build') # This directory contain
 breakpad_server_dir = os.path.join(base_dir, 'breakpad_server')
 build_dir = os.path.join(base_dir, 'build')
 data_dir = os.path.join(base_dir, 'data')
+gpg_dir = os.path.join(base_dir, 'gpg')
 log_file = os.path.join(base_dir, 'errors')
 patches_dir = os.path.join(base_dir, 'patches')
 reports_dir = os.path.join(base_dir, 'reports')
@@ -57,6 +59,7 @@ dump_syms = os.path.join(breakpad_server_dir, 'src', 'tools', 'linux', 'dump_sym
 fake_diablo_bin = 'fakediablo.sh'
 fake_diablo_dir = os.path.join(regression_dir, 'common', 'fakediablo')
 gcc_bin = os.path.join(gcc_toolchain_dir, 'bin', target_triple + '-gcc')
+objcopy_bin = os.path.join(gcc_toolchain_dir, 'bin', target_triple + '-objcopy')
 strip_bin = os.path.join(gcc_toolchain_dir, 'bin', target_triple + '-strip')
 minidump_stackwalk = os.path.join(breakpad_server_dir, 'src', 'processor', 'minidump_stackwalk')
 regression_script = os.path.join(regression_dir, 'common', 'regression-main', 'regression.py')

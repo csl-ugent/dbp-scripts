@@ -10,8 +10,10 @@ import setup_fs
 import setup_nop
 import extract_data
 import create_patches
+import inject_delta_data
 import report_binary_sizes
 import report_binary_text_sizes
+import report_delta_data_sizes
 import report_opportunity_log_sizes
 import report_patch_sizes
 import report_patch_timing
@@ -26,8 +28,10 @@ def complete_run(args, name):
     setup_nop.main()
     extract_data.main()
     create_patches.main()
+    inject_delta_data.main(False)
     report_binary_sizes.main()
     report_binary_text_sizes.main()
+    report_delta_data_sizes.main()
     report_opportunity_log_sizes.main()
     report_patch_sizes.main()
     report_patch_timing.main()

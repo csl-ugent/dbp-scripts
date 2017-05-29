@@ -22,10 +22,12 @@ The tests can be recreated using the generate_all_results.py script. For every c
 - setup_nop.py: Protect the binaries with NOP insertion.
 - extract_data.py: Extract all the data (symfiles and others) that is required to generate the patches.
 - create_patches.py: Creates the patches for all binaries and different combinations of protections. The patches are immediately tested for correctness.
+- inject_delta_data.py: Creates the ∆data and injects it into the binaries.
 
 Reports on the generated data in the ODS format are then generated using these scripts:
 - report_binary_sizes.py: The sizes of the default and fully diversified binaries (all stripped).
 - report_binary_text_sizes.py: The sizes of the .text sections of the default and fully diversified binaries.
+- report_delta_data_sizes.py: The sizes of the ∆data.
 - report_opportunity_log_sizes.py: The sizes of the opportunity logs.
 - report_patch_sizes.py: The sizes of the patches for all the combinations of the diversifications.
 - report_symfile_sizes.py: The sizes of the symfiles for the default and fully diversified binaries.

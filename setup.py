@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import gnupg
 import os
 import subprocess
 
@@ -17,6 +18,14 @@ def main():
         os.mkdir(config.tmp_dir)
     if not os.path.exists(config.reports_dir):
         os.mkdir(config.reports_dir)
+    if not os.path.exists(config.gpg_dir):
+        os.mkdir(config.gpg_dir)
+
+        print('************ Generate GPG key **********')
+        gpg = gnupg.GPG(homedir=config.gpg_dir)
+        key_settings = gpg.gen_key_input(key_type='RSA', key_length=2048, key_usage='ESCA', passphrase=config.gpg_passphrase)
+        key = gpg.gen_key(key_settings)
+        print(key)
 
     # Generate helper tools
     print('************ Making replay tools **********')
