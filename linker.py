@@ -65,36 +65,47 @@ class Section:
             self.obj = tokens[3]
 
         # If we can find the alignment, try to do so
-        if alignment_info is not None:
-            for obj in alignment_info.objects:
-                if self.obj in obj.name:
-                    self.alignment = obj.sections.get(self.name, None)
-                    if self.alignment:
-                        return
+        if alignment_info:
+            obj_name = self.obj[self.obj.rfind('/') +1:]
+            obj = alignment_info.objects.get(obj_name, None)
+            if obj:
+                self.alignment = obj.sections.get(self.name, None)
+                assert self.alignment, 'Could not find alignment information for this section!'
 
 class AlignmentObject:
     """A class representing the alignment information for an object"""
-    def __init__(self, name):
-        self.name = name
+    def __init__(self):
         self.sections = {}
 
 class AlignmentInformation:
     """A class representing the alignment information for a binary"""
     def __init__(self, align_path):
-        self.objects = []
+        self.objects = {}
 
         with open(align_path, 'r') as f_align:
-            align_lines = f_align.read().splitlines()
+            for align_line in f_align.read().splitlines():
+                # Check if this is an object (part of an archive or not)
+                if align_line.endswith('.o') or align_line.endswith('.o)'):
+                    # Get the name of the object (including archive.a(*) if present)
+                    name = align_line[align_line.rfind('/') +1:]
 
-        for align_line in align_lines:
-            # Check if this is an object (part of an archive or not)
-            if align_line.endswith('.o') or align_line.endswith('.o)'):
-                self.objects.append(AlignmentObject(align_line))
-            # Otherwise it's a line to be part of the current object
-            # Keep the section information in a dictionary
-            else:
-                tokens = align_line.split()
-                self.objects[-1].sections[tokens[0]] = int(tokens[1])
+                    # Add the object if it doesn't exist yet
+                    if name not in self.objects:
+                        current_obj = AlignmentObject()
+                        self.objects[name] = current_obj
+                    else:
+                        current_obj = self.objects[name]
+
+                # Otherwise it's a line to be part of the current object
+                else:
+                    tokens = align_line.split()
+
+                    # We don't want duplicate entries for meaningful sections
+                    if tokens[0] != '.text':
+                        assert tokens[0] not in current_obj.sections, 'Duplicate information for this .text section.'
+
+                    # Keep the section information in a dictionary
+                    current_obj.sections[tokens[0]] = int(tokens[1])
 
 class Map:
     """A class representing a map"""
@@ -144,7 +155,7 @@ class Map:
                     continue
 
                 # Look at all lines containing .text., but ignore some
-                if '.text' in line and not '*' in line:
+                if '.text' in line and not ('*' in line or '.ARM.extab.text.' in line or '.ARM.exidx.text.' in line):
                     # Handle the line depending on where we are in the map
                     # Decode the entry into an object
                     target_sections.append(Section(f_map, line, alignment_info))
