@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import os
+import pickle
 import sys
 
 # Import own modules
@@ -12,8 +13,15 @@ from symfile import SymFile
 
 # The core of this script: We replay those protections we can, and create/apply a patch for what is left.
 def core(base_data, div_path, seeds, patchfile):
-    # Get the base symfile and augment the symfile with information from linker.
-    base_symfile = SymFile().read_f(os.path.join(base_data, 'symfile'))
+    # Get the base symfile from a pickled version if it exists, or simply read it in
+    pickled_symfile = os.path.join(base_data, 'pickled_symfile')
+    if os.path.exists(pickled_symfile):
+        with open(pickled_symfile, 'rb') as f:
+            base_symfile = pickle.load(f)
+    else:
+        base_symfile = SymFile().read_f(os.path.join(base_data, 'symfile'))
+
+    # Augment the symfile with information from linker.
     linkermap = Map(os.path.join(base_data, 'map'), os.path.join(base_data, 'sections'))
     base_symfile.augment(linkermap, os.readlink(os.path.join(base_data, 'build')))
 

@@ -2,6 +2,7 @@
 import concurrent.futures
 import logging
 import os
+import pickle
 import shutil
 import subprocess
 
@@ -11,8 +12,9 @@ import diablo_symfile
 import linker
 import seed
 import support
+from symfile import SymFile
 
-def extract_data(seed_tuple, subset):
+def extract_data(seed_tuple, subset, pickle_symfiles=False):
     try:
         # Unpack all the seeds we need and create the relative path
         (orig_sp_seed, orig_fs_seed, orig_nop_seed) = support.get_seeds_from_tuple(seed_tuple, seed.SPSeed, seed.FSSeed, seed.NOPSeed)
@@ -49,6 +51,15 @@ def extract_data(seed_tuple, subset):
 
                 # Extract the section alignment information
                 linker.gather_section_alignment(os.path.join(build_dir, name + '.map'), os.path.join(data_dir, 'sections'))
+
+                if pickle_symfiles:
+                    # Get the symfile
+                    symfile_path = os.path.join(os.path.join(data_dir, 'symfile'))
+                    symfile = SymFile().read_f(symfile_path)
+
+                    # Pickle it
+                    with open(os.path.join(data_dir, 'pickled_symfile'), 'wb') as f_pickle:
+                        pickle.dump(symfile, f_pickle)
 
         # Copy over the stackpadding list for the extra build archives/objects (these are the same for every benchmark)
         if not subset:
