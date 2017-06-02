@@ -49,6 +49,8 @@ def core(base_data, div_path, seeds, patchfile):
 # This function checks the arguments. It exists so that the script's functionality can be invoked both from the command line as
 # from another python script.
 def patch(base_data, seeds, div_symfile_path=None, patch_path=None, output_dir=None, verbose=False):
+    base_data = base_data.rstrip('/')
+
     # Determine the mode of operation. If we are given a patch we should test it, if not we should generate one.
     if patch_path:
         if div_symfile_path:
