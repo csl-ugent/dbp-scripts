@@ -267,6 +267,7 @@ class SymFile:
         if self.info:
             res += self.info
         file_str = ''.join([str(f) for f in self.files])
+        self.funcs.sort(key=attrgetter('address'))
         func_str = ''.join([str(func) for func in self.funcs])
         self.publics.sort(key=attrgetter('address'))
         public_str = '\n'.join([str(public) for public in self.publics]) + '\n'
