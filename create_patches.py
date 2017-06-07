@@ -24,7 +24,6 @@ def create_patch(benchmark, seeds):
         # Verify the patch is correct
         if not patch.patch(base_data, seeds, div_symfile_path=div_symfile_path, patch_path=os.path.join(patch_dir, 'patch')):
             os.remove(os.path.join(patch_dir, 'patch'))
-            os.remove(os.path.join(patch_dir, 'patch.bz2'))
             logging.getLogger().error('Patch verification failed for ' + patch_dir)
     except Exception:
         logging.getLogger().exception('Patch creation failed for ' + patch_dir)

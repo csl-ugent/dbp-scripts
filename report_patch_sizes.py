@@ -19,36 +19,22 @@ def main():
 
         # Create the first few columns. The first is for the benchmarks, second is average, and third is max (to be filled in later).
         rownames = [benchmark for benchmark,_ in support.benchmarks_gen()]
-        sheet.column += ['Patches uncompressed'] + rownames + ['Patches compressed'] + rownames
-        sheet.column += [''] * (len(rownames) +1) + ['AVG'] + [''] * len(rownames)
-        sheet.column += [''] * (len(rownames) +1) + ['MAX'] + [''] * len(rownames)
+        sheet.column += ['Patch sizes'] + rownames
+        sheet.column += ['AVG'] * (len(rownames) +1)
+        sheet.column += ['MAX'] * (len(rownames) +1)
         for seed_tuple in support.seeds_gen(*subset):
-            # Empty cell
-            sizes = ['']
-
             # Get all the sizes of the patches
+            sizes = ['']
             for benchmark, _ in support.benchmarks_gen():
                 patch = os.path.join(support.create_path_for_seeds(config.patches_dir, *seed_tuple), benchmark, 'patch')
                 if os.path.exists(patch):
                     sizes.append(os.stat(patch).st_size)
                 else:
                     sizes.append('FAIL')
-
-            # Empty cell
-            sizes.append('')
-
-            # Get all the sizes of the compressed patches
-            for benchmark, _ in support.benchmarks_gen():
-                patch = os.path.join(support.create_path_for_seeds(config.patches_dir, *seed_tuple), benchmark, 'patch.bz2')
-                if os.path.exists(patch):
-                    sizes.append(os.stat(patch).st_size)
-                else:
-                    sizes.append('FAIL')
-
             sheet.column += sizes
 
         # Calculate in the average and the max
-        for row in (row for row in sheet.rows() if not row[0].startswith('Patches')):
+        for row in list(sheet.rows())[1:]:
             sizes = [elem for elem in row[3:] if isinstance(elem, int)]
             if sizes:
                 row[1] = sum(sizes) // len(sizes)
