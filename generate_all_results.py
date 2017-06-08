@@ -14,6 +14,7 @@ import report_binary_sizes
 import report_binary_text_sizes
 import report_opportunity_log_sizes
 import report_patch_sizes
+import report_patch_timing
 import report_symfile_sizes
 
 def complete_run(args, name):
@@ -29,6 +30,7 @@ def complete_run(args, name):
     report_binary_text_sizes.main()
     report_opportunity_log_sizes.main()
     report_patch_sizes.main()
+    report_patch_timing.main()
     report_symfile_sizes.main()
 
     # Copy over the stuff we want (data, patches, reports, and errors)
