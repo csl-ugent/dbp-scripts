@@ -52,9 +52,10 @@ def setup_symbols_dir_for_dump(dump, symfile_path, name, run_dir):
             modules = True
             continue
 
-        if modules and name in line:
+        if modules and name in line and '(main)' in line:
             tokens = line.split()
             symfile_id = tokens[-1][:-1]
+            break
 
     assert symfile_id, 'Couldn\'t extract the symfile ID from the minidump!'
 
