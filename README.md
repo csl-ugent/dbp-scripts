@@ -24,12 +24,13 @@ The tests can be recreated using the generate_all_results.py script. For every c
 - create_patches.py: Creates the patches for all binaries and different combinations of protections. The patches are immediately tested for correctness.
 - inject_delta_data.py: Creates the ∆data and injects it into the binaries.
 
-Reports on the generated data in the ODS format are then generated using these scripts:
+Reports on the generated data are then generated (in the ODS format) using these scripts:
 - report_binary_sizes.py: The sizes of the default and fully diversified binaries (all stripped).
 - report_binary_text_sizes.py: The sizes of the .text sections of the default and fully diversified binaries.
 - report_delta_data_sizes.py: The sizes of the ∆data.
 - report_opportunity_log_sizes.py: The sizes of the opportunity logs.
 - report_patch_sizes.py: The sizes of the patches for all the combinations of the diversifications.
+- report_patch_timing.py: This script times how long it takes to generate and apply patches for fully diversified binaries.
 - report_symfile_sizes.py: The sizes of the symfiles for the default and fully diversified binaries.
 
 Some other scripts of note are:
@@ -38,4 +39,3 @@ Some other scripts of note are:
 - patch.py: Can be used to create individual patches between symfiles.
 - regression_binaries.py: Regression tests the protected binaries.
 - regression_symfiles.py: Regression tests the symfiles generated for binaries rewritten by Diablo.
-- report_patch_timing.py: This script times how long it takes to generate and apply patches for fully diversified binaries.
