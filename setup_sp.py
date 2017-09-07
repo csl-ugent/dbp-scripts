@@ -27,7 +27,7 @@ install_dict = {
     'spec_dir': config.spec_dir
 }
 
-s2r_cmd = Template('$binary -s "${ssh_params}" -p $spec_dir -b build_base_${spec_config_name}-nn.0000 -d $target_dir')
+s2r_cmd = Template('$binary -s "${ssh_params}" -p $spec_dir -b build_base_${spec_config_name}-nn.0000 -t 5000 -d $target_dir')
 s2r_dict = {
     'binary' : config.spec2regression_script,
     'spec_dir': config.spec_dir,
