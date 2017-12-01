@@ -12,7 +12,7 @@ import linker
 import seed
 import support
 
-install_cmd = Template('$binary $install_options -j $concurrency -D -d $spec_dir -c $spec_config_name -t $gcc_toolchain_dir -p $target_triple -C $clang_dir '
+install_cmd = Template('$binary -r -j $concurrency -D -d $spec_dir -c $spec_config_name -t $gcc_toolchain_dir -p $target_triple -C $clang_dir '
         '-O "${compile_options} -Wl,--no-demangle -Wl,--hash-style=sysv -Wl,--no-merge-exidx-entries -Wl,-T $link_script"')
 install_dict = {
     'binary' : config.spec_install_script,
@@ -21,9 +21,8 @@ install_dict = {
     'concurrency': multiprocessing.cpu_count() -1,
     'gcc_toolchain_dir': config.gcc_toolchain_dir,
     'target_triple': config.target_triple,
-    'install_options': '',
     'link_script': config.link_script,
-    'spec_config_name': 'base',
+    'spec_config_name': '',
     'spec_dir': config.spec_dir
 }
 
@@ -54,23 +53,19 @@ def build_extra(build_dir, compile_options):
     return ret_options
 
 # Build the SPEC benchmarks and do a spec2regression somewhere.
-def build(target_dir, compile_options, spec_config_name, initial_build=False):
-    if initial_build:
-        # If this is the initial build we only have to build using the default settings
-        subprocess.check_call(shlex.split(install_cmd.substitute(install_dict)))
-    else:
-        # Else we use the arguments passed, and also do a spec2regression
-        install_d = install_dict.copy()
-        install_d['compile_options'] = compile_options
-        install_d['install_options'] = '-r'
-        install_d['spec_config_name'] = spec_config_name
-        subprocess.check_call(shlex.split(install_cmd.substitute(install_d)))
+def build(target_dir, compile_options, spec_config_name):
+    install_dict['compile_options'] = compile_options
+    install_dict['spec_config_name'] = spec_config_name
+    subprocess.check_call(shlex.split(install_cmd.substitute(install_dict)))
 
-        if target_dir:
-            s2r_d = s2r_dict.copy()
-            s2r_d['spec_config_name'] = spec_config_name
-            s2r_d['target_dir'] = target_dir
-            subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_d)))
+    if target_dir:
+        s2r_dict['spec_config_name'] = spec_config_name
+        s2r_dict['target_dir'] = target_dir
+        subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_dict)))
+
+# This only installs SPEC, and does not build anything
+def install_spec():
+    subprocess.check_call([config.spec_install_script, '-j', str(multiprocessing.cpu_count()), '-i', '-d', config.spec_dir])
 
 ####################################################################################################
 # First diversification form - stackpadding. The benchmarks are compiled using the patched LLVM.
@@ -89,14 +84,13 @@ def main(compile_args=[]):
 
     # Install SPEC if necessary
     if not os.path.exists(config.spec_dir):
-        build('', '', '', True)
+        install_spec()
 
     # Some SPEC configuration
     spec_config_name = 'spec2006'
 
     # Start by compiling for the default binaries
     print('************ Building default binaries... **********')
-    install_dict['install_options'] = '-r'
     compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.default_padding)] + compile_args
     extra_options = build_extra(os.path.join(config.extra_build_dir, '0'), compile_options)
     build(support.create_path_for_seeds(config.build_dir), ' '.join(compile_options + extra_options), spec_config_name)
