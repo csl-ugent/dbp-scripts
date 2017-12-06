@@ -19,12 +19,13 @@ def main():
     if not os.path.exists(config.reports_dir):
         os.mkdir(config.reports_dir)
     if not os.path.exists(config.gpg_dir):
-        os.mkdir(config.gpg_dir)
+        os.mkdir(config.gpg_dir, mode=0o700)
 
         print('************ Generate GPG key **********')
-        gpg = gnupg.GPG(homedir=config.gpg_dir)
-        key_settings = gpg.gen_key_input(key_type='RSA', key_length=2048, key_usage='ESCA', passphrase=config.gpg_passphrase)
+        gpg = gnupg.GPG(gnupghome=config.gpg_dir)
+        key_settings = gpg.gen_key_input(key_type='RSA', key_length=2048, key_usage='encrypt', passphrase=config.gpg_passphrase)
         key = gpg.gen_key(key_settings)
+        assert len(str(key)), 'GPG key was not successfully generated!'
         print(key)
 
     # Generate helper tools
