@@ -62,7 +62,7 @@ def decode(dd_enc, seed_types, encrypt=True):
 # Injects the delta data into a separate section in the binary.
 # The delta data is in a file for easier objcopy use.
 def inject(binary, dd_path):
-    subprocess.check_call([config.objcopy_bin, '--add-section', section_name + '=' + dd_path, binary])
+    subprocess.check_call(['objcopy', '--input-target', 'elf32-little', '--add-section', section_name + '=' + dd_path, binary])
 
 # Extracts the delta data from the separate section in the binary.
 # The data returned is binary.

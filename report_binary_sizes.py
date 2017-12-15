@@ -9,7 +9,7 @@ import support
 
 def get_binary_stripped_size(binary):
     output = os.path.join(config.tmp_dir, 'binary')
-    subprocess.check_call([config.strip_bin, '-o', output, binary])
+    subprocess.check_call(['strip', '--input-target', 'elf32-little', '-o', output, binary])
     return os.stat(output).st_size
 
 def main():
