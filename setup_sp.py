@@ -12,14 +12,14 @@ import linker
 import seed
 import support
 
-install_cmd = Template('$binary -r -j $concurrency -D -d $spec_dir -c $spec_config_name -t $gcc_toolchain_dir -p $target_triple -C $clang_dir '
-        '-O "${compile_options} -Wl,--no-demangle -Wl,--hash-style=sysv -Wl,--no-merge-exidx-entries -Wl,-T $link_script"')
+install_cmd = Template('$binary -r -j $concurrency -D -d $spec_dir -c $spec_config_name -t $cross_toolchain_dir -p $target_triple -C $clang_dir '
+        '-O "${compile_options} -Wl,--no-demangle -Wl,--hash-style=sysv -Wl,--no-merge-exidx-entries -Wl,--allow-shlib-undefined -Wl,-T $link_script"')
 install_dict = {
     'binary' : config.spec_install_script,
     'clang_dir': config.clang_dir,
     'compile_options': '',
     'concurrency': multiprocessing.cpu_count() -1,
-    'gcc_toolchain_dir': config.gcc_toolchain_dir,
+    'cross_toolchain_dir': config.cross_toolchain_dir,
     'target_triple': config.target_triple,
     'link_script': config.link_script,
     'spec_config_name': '',
@@ -48,7 +48,8 @@ def build_extra(build_dir, compile_options):
     subprocess.check_call([os.path.join(config.breakpad_dir, 'configure'), '--host=' + config.target_triple, '--disable-tools', '--disable-processor',
         'CC=' + config.clang_bin, 'CXX=' + config.clang_bin, 'CPPFLAGS=' + ' '.join(compile_options)], cwd=build_dir, stdout=subprocess.DEVNULL)
     subprocess.check_call(['make'], cwd=build_dir, stdout=subprocess.DEVNULL)
-    ret_options.append('-Wl,--library=:' + os.path.join(build_dir, config.breakpad_archive))
+    ret_options.append('-Wl,--library-path=' + build_dir)
+    ret_options.append('-Wl,--library=:' + config.breakpad_archive)
 
     return ret_options
 
@@ -83,7 +84,7 @@ def main(compile_args=[]):
 
     # Start by compiling for the default binaries
     print('************ Building default binaries... **********')
-    compile_options = [config.binary_options, config.clang_options, '-mllvm -stackpadding=' + str(config.default_padding)] + compile_args
+    compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.default_padding)] + compile_args
     extra_options = build_extra(os.path.join(config.extra_build_dir, '0'), compile_options)
     build(support.create_path_for_seeds(config.build_dir), ' '.join(compile_options + extra_options), spec_config_name)
     print('************ Build finished. **********')
@@ -92,7 +93,7 @@ def main(compile_args=[]):
     for sp_seed, in support.seeds_gen(seed.SPSeed):
         print('************ Building stackpadded binary for seed ' + str(sp_seed) + '... **********')
         # Adapt the arguments so that now we use the real max padding and add random padding
-        compile_options = [config.binary_options, config.clang_options, '-mllvm -stackpadding=' + str(config.max_padding) + ' -mllvm -padseed=' + str(sp_seed)] + compile_args
+        compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.max_padding) + ' -mllvm -padseed=' + str(sp_seed)] + compile_args
         extra_options = build_extra(os.path.join(config.extra_build_dir, str(sp_seed)), compile_options)
         build(support.create_path_for_seeds(config.build_dir, sp_seed), ' '.join(compile_options + extra_options), spec_config_name)
         print('************ Build finished. **********')

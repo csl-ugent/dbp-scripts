@@ -3,7 +3,6 @@ import os
 import sys
 
 # Parameters
-binary_options = '-ffunction-sections -g -mcpu=cortex-a8 -marm' # These are general compile options for code that is to go into the protected binary
 default_padding = 8
 gpg_passphrase = 'breakpad_pass'
 max_padding = 256
@@ -11,7 +10,8 @@ max_seed = 1000000
 nr_of_measurements = 30
 root_seed = 101
 ssh_params = # You should put the parameters required to SSH to your testing board here (e.g. '-p 915 babrath@arndale')
-target_triple = 'arm-diablo-linux-gnueabi'
+target_triple =
+cross_compilation_options =
 
 # Non-configurable directories and files that are located inside this repository.
 scripts_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -46,7 +46,7 @@ init_logging()
 # Paths for repositories/tools we use
 breakpad_dir =
 clang_dir =
-gcc_toolchain_dir =
+cross_toolchain_dir =
 regression_dir =
 
 # Paths for tools present in those repositories
@@ -55,12 +55,11 @@ clang_bin = os.path.join(clang_dir, 'bin', 'clang')
 dump_syms = os.path.join(breakpad_server_dir, 'src', 'tools', 'linux', 'dump_syms', 'dump_syms')
 fake_diablo_bin = 'fakediablo.sh'
 fake_diablo_dir = os.path.join(regression_dir, 'common', 'fakediablo')
-gcc_bin = os.path.join(gcc_toolchain_dir, 'bin', target_triple + '-gcc')
 minidump_stackwalk = os.path.join(breakpad_server_dir, 'src', 'processor', 'minidump_stackwalk')
 regression_script = os.path.join(regression_dir, 'common', 'regression-main', 'regression.py')
 spec_install_script = os.path.join(regression_dir, 'speccpu2006', 'install.sh')
 spec2regression_script = os.path.join(regression_dir, 'speccpu2006', 'spec2regression.sh')
 
-# Compiling options for tools
-breakpad_options = '-Wl,--library=stdc++ -Wl,--library=atomic -Wl,--library=pthread -Wl,--library=:' + os.path.join(dump_dir, 'dump.o') # The options required to link with the breakpad client
-clang_options = '-isysroot ' + os.path.join(gcc_toolchain_dir, target_triple, 'sysroot') + ' -no-integrated-as -gcc-toolchain ' + gcc_toolchain_dir + ' -ccc-gcc-name ' + target_triple + ' -target ' + target_triple # Extra options for clang, to make it use the gcc backend
+# Compilation options
+breakpad_options = '-Wl,--library=stdc++ -Wl,--library=atomic -Wl,--library=pthread -Wl,--library-path=' + dump_dir + ' -Wl,--library=:dump.o' # The options required to link with the breakpad client
+binary_options = '-ffunction-sections -g ' + cross_compilation_options # These are general compile options for code that is to go into the protected binary
