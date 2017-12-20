@@ -46,7 +46,7 @@ def build_extra(build_dir, compile_options):
     # Build the breakpad archive
     print('************ Building breakpad archive **********')
     subprocess.check_call([os.path.join(config.breakpad_dir, 'configure'), '--host=arm-diablo-linux-gnueabi', '--disable-tools', '--disable-processor',
-        'CC=' + config.clang_bin, 'CXX=' + config.clang_bin, 'CPPFLAGS=' + ' '.join(compile_options + [config.clang_options])], cwd=build_dir, stdout=subprocess.DEVNULL)
+        'CC=' + config.clang_bin, 'CXX=' + config.clang_bin, 'CPPFLAGS=' + ' '.join(compile_options)], cwd=build_dir, stdout=subprocess.DEVNULL)
     subprocess.check_call(['make'], cwd=build_dir, stdout=subprocess.DEVNULL)
     ret_options.append('-Wl,--library=:' + os.path.join(build_dir, config.breakpad_archive))
 
@@ -91,7 +91,7 @@ def main(compile_args=[]):
 
     # Start by compiling for the default binaries
     print('************ Building default binaries... **********')
-    compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.default_padding)] + compile_args
+    compile_options = [config.binary_options, config.clang_options, '-mllvm -stackpadding=' + str(config.default_padding)] + compile_args
     extra_options = build_extra(os.path.join(config.extra_build_dir, '0'), compile_options)
     build(support.create_path_for_seeds(config.build_dir), ' '.join(compile_options + extra_options), spec_config_name)
     print('************ Build finished. **********')
@@ -100,7 +100,7 @@ def main(compile_args=[]):
     for sp_seed, in support.seeds_gen(seed.SPSeed):
         print('************ Building stackpadded binary for seed ' + str(sp_seed) + '... **********')
         # Adapt the arguments so that now we use the real max padding and add random padding
-        compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.max_padding) + ' -mllvm -padseed=' + str(sp_seed)] + compile_args
+        compile_options = [config.binary_options, config.clang_options, '-mllvm -stackpadding=' + str(config.max_padding) + ' -mllvm -padseed=' + str(sp_seed)] + compile_args
         extra_options = build_extra(os.path.join(config.extra_build_dir, str(sp_seed)), compile_options)
         build(support.create_path_for_seeds(config.build_dir, sp_seed), ' '.join(compile_options + extra_options), spec_config_name)
         print('************ Build finished. **********')
