@@ -45,7 +45,7 @@ def build_extra(build_dir, compile_options):
 
     # Build the breakpad archive
     print('************ Building breakpad archive **********')
-    subprocess.check_call([os.path.join(config.breakpad_dir, 'configure'), '--host=arm-diablo-linux-gnueabi', '--disable-tools', '--disable-processor',
+    subprocess.check_call([os.path.join(config.breakpad_dir, 'configure'), '--host=' + config.target_triple, '--disable-tools', '--disable-processor',
         'CC=' + config.clang_bin, 'CXX=' + config.clang_bin, 'CPPFLAGS=' + ' '.join(compile_options)], cwd=build_dir, stdout=subprocess.DEVNULL)
     subprocess.check_call(['make'], cwd=build_dir, stdout=subprocess.DEVNULL)
     ret_options.append('-Wl,--library=:' + os.path.join(build_dir, config.breakpad_archive))
