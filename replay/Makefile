@@ -8,7 +8,7 @@ sp: LDFLAGS += $(shell ${LLVM_DIR}/bin/llvm-config --ldflags)
 sp: LDLIBS += $(shell ${LLVM_DIR}/bin/llvm-config --libs support)
 
 .PHONY: all clean
-all: nop sp
+all: sp
 
 clean:
-	rm nop sp
+	rm sp

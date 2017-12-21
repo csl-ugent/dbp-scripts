@@ -7,7 +7,6 @@ import config
 import setup
 import setup_sp
 import setup_fs
-import setup_nop
 import extract_data
 import create_patches
 import inject_delta_data
@@ -25,7 +24,6 @@ def complete_run(args, name):
     setup.main()
     setup_sp.main(args)
     setup_fs.main()
-    setup_nop.main()
     extract_data.main()
     create_patches.main()
     inject_delta_data.main(False)

@@ -85,47 +85,6 @@ def measure_crash_report_time(build_dir):
     report = pyexcel.Book(sheets={'Crash report creation times' : sheet})
     report.save_as(os.path.join(config.reports_dir, 'crash_report_creation_times.ods'))
 
-def measure_diablo_text_size(build_dir):
-    # Create the sheet
-    print('************ Measuring binary .text sizes before and after Diablo **********')
-    sheet = pyexcel.Sheet()
-    rownames = [benchmark for benchmark,_ in support.benchmarks_gen()]
-    sheet.column += [''] + rownames
-
-    def get_binary_text_size(binary):
-        for line in subprocess.check_output(['objdump', '-h', binary], universal_newlines=True).splitlines():
-            tokens = line.split()
-            if len(tokens) >= 3 and tokens[1] == '.text':
-                return hex_int(tokens[2])
-
-    # Get all the sizes of the default binaries
-    sizes = ['Before Diablo']
-    for (benchmark, name) in support.benchmarks_gen():
-        binary = os.path.join(build_dir, benchmark, name)
-        sizes.append(get_binary_text_size(binary))
-    sheet.column += sizes
-
-    # Get the sizes of the binaries after they have been rewritten by Diablo (without any protections or optimizations)
-    sizes = ['After Diablo']
-    for (benchmark, name) in support.benchmarks_gen():
-        print('************ ' + benchmark + ' **********')
-        input_dir = os.path.join(build_dir, benchmark)
-        subprocess.check_call([config.diablo_bin, '-O', input_dir, '-o', name] + shlex.split(config.diablo_options) +
-                [os.path.join(input_dir, name)], stdout=subprocess.DEVNULL, cwd=config.tmp_dir)
-        binary = os.path.join(config.tmp_dir, name)
-        sizes.append(get_binary_text_size(binary))
-    sheet.column += sizes
-
-    # Calculate the increase
-    sizes = ['Increase']
-    for size1, size2 in list(zip(sheet.column[1], sheet.column[2]))[1:]:
-        sizes.append(size2/size1)
-    sheet.column += sizes
-
-    # Create the report book and write it out
-    report = pyexcel.Book(sheets={'.text sizes' : sheet})
-    report.save_as(os.path.join(config.reports_dir, 'diablo_text_sizes.ods'))
-
 def measure_compilation_time(build_dir):
     # Create the sheet
     print('************ Measuring the compilation times **********')
@@ -197,15 +156,13 @@ def main():
     parser.add_argument('-a', '--arguments', type=str, default='', help='Extra compiler arguments to be used.')
     parser.add_argument('-k', '--keep_build', action='store_true', help='Keep the build directory, do not rebuild.')
     parser.add_argument('-c', '--compilation_time', action='store_true', help='Measure the compilation time.')
-    parser.add_argument('-d', '--diablo_size', action='store_true', help='Measure the size increase created by Diablo.')
     parser.add_argument('-r', '--crash_report_time', action='store_true', help='Measure the crash report time.')
     parser.add_argument('-b', '--benchmark_time', action='store_true', help='Measure the benchmark time.')
     args = parser.parse_args()
 
     # If no measurement was specified, do all
-    if not args.compilation_time and not args.diablo_size and not args.crash_report_time and not args.benchmark_time:
+    if not args.compilation_time and not args.crash_report_time and not args.benchmark_time:
         args.compilation_time = True
-        args.diablo_size = True
         args.crash_report_time = True
 
     # Default compilation options
@@ -229,8 +186,6 @@ def main():
     # Do the measurements (crash reporting last as it changes the binary)
     if args.compilation_time:
         measure_compilation_time(build_dir)
-    if args.diablo_size:
-        measure_diablo_text_size(build_dir)
     if args.benchmark_time:
         measure_benchmark_time(build_dir, build_dir_opt)
     if args.crash_report_time:

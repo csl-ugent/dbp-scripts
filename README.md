@@ -7,7 +7,6 @@ To execute the scripts in this repository we require:
 
 Repositories:
 - breakpad
-- Diablo
 - Diablo toolchains
 - Diablo regression
 
@@ -19,7 +18,6 @@ The tests can be recreated using the generate_all_results.py script. For every c
 - setup.py: Does some general setup such as creating helper tools and generating seeds.
 - setup_sp.py: Build the binaries with stack padding.
 - setup_fs.py: Protect the binaries with function shuffling.
-- setup_nop.py: Protect the binaries with NOP insertion.
 - extract_data.py: Extract all the data (symfiles and others) that is required to generate the patches.
 - create_patches.py: Creates the patches for all binaries and different combinations of protections. The patches are immediately tested for correctness.
 - inject_delta_data.py: Creates the ∆data and injects it into the binaries.
@@ -38,4 +36,3 @@ Some other scripts of note are:
 - measure_sp_function_sizes.py: Can be used to measure the increase/decrease in function sizes for different amounts of stack padding.
 - patch.py: Can be used to create individual patches between symfiles.
 - regression_binaries.py: Regression tests the protected binaries.
-- regression_symfiles.py: Regression tests the symfiles generated for binaries rewritten by Diablo.

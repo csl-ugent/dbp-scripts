@@ -8,7 +8,6 @@ import subprocess
 
 # Import own modules
 import config
-import diablo_symfile
 import linker
 import seed
 import support
@@ -17,8 +16,8 @@ from symfile import SymFile
 def extract_data(seed_tuple, subset, pickle_symfiles=False):
     try:
         # Unpack all the seeds we need and create the relative path
-        (orig_sp_seed, orig_fs_seed, orig_nop_seed) = support.get_seeds_from_tuple(seed_tuple, seed.SPSeed, seed.FSSeed, seed.NOPSeed)
-        (sp_seed, fs_seed, nop_seed) = support.get_seeds_from_tuple(subset, seed.SPSeed, seed.FSSeed, seed.NOPSeed)
+        (orig_sp_seed, orig_fs_seed) = support.get_seeds_from_tuple(seed_tuple, seed.SPSeed, seed.FSSeed)
+        (sp_seed, fs_seed) = support.get_seeds_from_tuple(subset, seed.SPSeed, seed.FSSeed)
         relpath = support.relpath_for_seeds(*subset)
 
         print('************ Extracting for path ' + relpath + ' **********')
@@ -30,17 +29,10 @@ def extract_data(seed_tuple, subset, pickle_symfiles=False):
             os.symlink(build_dir, os.path.join(data_dir, 'build'))
 
             with open(os.path.join(data_dir, 'symfile'), 'w') as f_sym:
-                if nop_seed:
-                    no_nop_binary = os.path.join(support.create_path_for_seeds(config.build_dir, sp_seed, fs_seed), benchmark, name)
-                    listing = os.path.join(build_dir, name + '.list')
-                    diablo_symfile.create_updated_symfile(no_nop_binary, listing, f_sym)
-                else:
-                    # Extract the actual symfile using dump_syms. This tool creates a LOT of warnings so we redirect stderr to /dev/null
-                    subprocess.check_call([config.dump_syms, os.path.join(build_dir, name)], stdout=f_sym, stderr=subprocess.DEVNULL)
+                # Extract the actual symfile using dump_syms. This tool creates a LOT of warnings so we redirect stderr to /dev/null
+                subprocess.check_call([config.dump_syms, os.path.join(build_dir, name)], stdout=f_sym, stderr=subprocess.DEVNULL)
 
             # Copy over the opportunity logs
-            if not nop_seed:
-                shutil.copy2(os.path.join(support.create_path_for_seeds(config.build_dir, sp_seed, fs_seed, orig_nop_seed), benchmark, 'nopinsertion.list'), data_dir)
             if not sp_seed:
                 shutil.copy2(os.path.join(support.create_path_for_seeds(config.build_dir, orig_sp_seed, fs_seed), benchmark, 'stackpadding.list'), data_dir)
 

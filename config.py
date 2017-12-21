@@ -9,7 +9,6 @@ default_padding = 8
 gpg_passphrase = 'breakpad_pass'
 max_padding = 256
 max_seed = 1000000
-nop_chance = 20
 nr_of_measurements = 30
 root_seed = 101
 ssh_params = # You should put the parameters required to SSH to your testing board here (e.g. '-p 915 babrath@arndale')
@@ -48,7 +47,6 @@ init_logging()
 # Paths for repositories/tools we use
 breakpad_dir =
 clang_dir =
-diablo_bin =
 gcc_toolchain_dir =
 regression_dir =
 
@@ -67,4 +65,3 @@ spec2regression_script = os.path.join(regression_dir, 'speccpu2006', 'spec2regre
 # Compiling options for tools
 breakpad_options = '-Wl,--library=stdc++ -Wl,--library=atomic -Wl,--library=pthread -Wl,--library=:' + os.path.join(dump_dir, 'dump.o') # The options required to link with the breakpad client
 clang_options = '-isysroot ' + os.path.join(gcc_toolchain_dir, target_triple, 'sysroot') + ' -no-integrated-as -gcc-toolchain ' + gcc_toolchain_dir + ' -ccc-gcc-name ' + target_triple + ' -target ' + target_triple # Extra options for clang, to make it use the gcc backend
-diablo_options = '-Z -kco -exidx --no-merge-exidx --no-movw-movt-producers'

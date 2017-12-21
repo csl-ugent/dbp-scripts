@@ -31,11 +31,6 @@ class FSSeed(Seed):
     idx = len(Seed.__subclasses__())
     replay = replay.replay_fs
 
-class NOPSeed(Seed):
-    """The class for NOP seeds"""
-    idx = len(Seed.__subclasses__())
-    replay = replay.replay_nop
-
 nr_of_types = len(Seed.__subclasses__())
 
 def get_types():
