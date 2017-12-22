@@ -284,7 +284,7 @@ class SymFile:
                 break
 
         self.nr_of_shuffle_funcs = len(linkermap.shuffle_sections)
-        self.nr_of_post_funcs = len(self.funcs) - self.nr_of_shuffle_funcs - self.nr_of_pre_funcs
+        self.post_funcs_idx = self.nr_of_pre_funcs + self.nr_of_shuffle_funcs
 
         # For the pre functions we can't be certain to have section information. This is because
         # -ffunction-sections doesn't always work for initializers. Try to find the corresponding
@@ -294,16 +294,16 @@ class SymFile:
             func.augment(func_section, build_dir)
 
         # For the shuffle functions we have section information, copy it over to the functions.
-        for (func, section) in zip(self.funcs[self.nr_of_pre_funcs:-self.nr_of_post_funcs], linkermap.shuffle_sections):
+        for (func, section) in zip(self.funcs[self.nr_of_pre_funcs:], linkermap.shuffle_sections):
             func.augment(section, build_dir)
 
         # For the functions at the end, there was no ffunction-sections. Therefore, with possibly multiple functions in a section, we're
         # forced to start searcing the corresponding section. If it doesn't exist, we'll use defaults.
         # We will attempt to determine offsets though from the previous function though.
-        if self.nr_of_post_funcs:
+        if self.post_funcs_idx < len(self.funcs):
             # Get the address at the end of the last shuffled section
-            address = self.funcs[-self.nr_of_post_funcs -1].address + linkermap.shuffle_sections[-1].size
-            for func in self.funcs[-self.nr_of_post_funcs:]:
+            address = self.funcs[self.post_funcs_idx -1].address + linkermap.shuffle_sections[-1].size
+            for func in self.funcs[self.post_funcs_idx:]:
                 # Get the offset between its address and the address of the last known function
                 func.offset = func.address - address
                 address = func.address

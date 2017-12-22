@@ -16,12 +16,12 @@ def replay_fs(seed, base_symfile, base_data):
 
     # Select the shuffle functions, shuffle them, then reconstitute the array including those pre- and post- parts that stay in the same order
     random.seed(seed)
-    shuffled = base_symfile.funcs[base_symfile.nr_of_pre_funcs:-base_symfile.nr_of_post_funcs]
+    shuffled = base_symfile.funcs[base_symfile.nr_of_pre_funcs:base_symfile.post_funcs_idx]
     random.shuffle(shuffled)
-    base_symfile.funcs = base_symfile.funcs[:base_symfile.nr_of_pre_funcs] + shuffled + base_symfile.funcs[-base_symfile.nr_of_post_funcs:]
+    base_symfile.funcs = base_symfile.funcs[:base_symfile.nr_of_pre_funcs] + shuffled + base_symfile.funcs[base_symfile.post_funcs_idx:]
 
     # Fix up the addresses for every shuffled function
-    for func in base_symfile.funcs[base_symfile.nr_of_pre_funcs:-base_symfile.nr_of_post_funcs]:
+    for func in base_symfile.funcs[base_symfile.nr_of_pre_funcs:base_symfile.post_funcs_idx]:
         # Predict the address of this section
         address = support.align(address, func.alignment)
 
@@ -32,7 +32,7 @@ def replay_fs(seed, base_symfile, base_data):
         address = address + func.section_size
 
     # Fix up the addresses for every post function
-    for func in base_symfile.funcs[-base_symfile.nr_of_post_funcs:]:
+    for func in base_symfile.funcs[base_symfile.post_funcs_idx:]:
         # Update the address with the offset of the function
         address = address + func.offset
 
