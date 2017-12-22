@@ -1,3 +1,4 @@
+import re
 import subprocess
 
 # Import own modules
@@ -152,6 +153,11 @@ class Map:
 
                 # We haven't arrived to the good part yet
                 if target_sections is None:
+                    # Look for the start address of the text segment
+                    m = re.search('(?<=PROVIDE \(__executable_start,)\s+(?P<base>\w+)(?=\))', line)
+                    if m:
+                        self.text_start_address = hex_int(m.group('base'))
+
                     continue
 
                 # Look at all lines containing .text., but ignore some

@@ -3,7 +3,6 @@ import os
 import sys
 
 # Parameters
-base_address = 0x8000
 binary_options = '-ffunction-sections -g -mcpu=cortex-a8 -marm' # These are general compile options for code that is to go into the protected binary
 default_padding = 8
 gpg_passphrase = 'breakpad_pass'

@@ -279,7 +279,7 @@ class SymFile:
     def augment(self, linkermap, build_dir):
         # Determine how many of each kind of functions there are
         for iii, func in enumerate(self.funcs):
-            if linkermap.shuffle_sections[0].address <= (func.address + config.base_address):
+            if linkermap.shuffle_sections[0].address <= (func.address + linkermap.text_start_address):
                 self.nr_of_pre_funcs = iii
                 break
 
