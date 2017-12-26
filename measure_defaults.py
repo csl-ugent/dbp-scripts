@@ -175,13 +175,13 @@ def main():
         assert args.keep_build, 'Keep previous build was not specified. A SPEC build must already be provided!'
         build_dir_opt = os.path.join(config.tmp_dir, 'spec_measurements_opt')
         extra_options = setup_sp.build_extra(extra_build_dir, compile_options)
-        setup_sp.build(build_dir, ' '.join(compile_options + extra_options), 'measurements')
+        setup_sp.build_spec(build_dir, ' '.join(compile_options + extra_options), 'measurements')
 
     # Build the benchmarks. No protections at all (not even default stack padding), but with added breakpad.
     build_dir = os.path.join(config.tmp_dir, 'spec_measurements')
     if not args.keep_build:
         extra_options = setup_sp.build_extra(extra_build_dir, compile_options)
-        setup_sp.build(build_dir, ' '.join(compile_options + extra_options), 'measurements')
+        setup_sp.build_spec(build_dir, ' '.join(compile_options + extra_options), 'measurements')
 
     # Do the measurements (crash reporting last as it changes the binary)
     if args.compilation_time:

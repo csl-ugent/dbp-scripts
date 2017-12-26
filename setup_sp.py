@@ -12,29 +12,6 @@ import linker
 import seed
 import support
 
-install_cmd = Template('$binary -r -j $concurrency -D -d $spec_dir -c $spec_config_name -t $cross_toolchain_dir -p $target_triple -C $clang_dir '
-        '-O "${compile_options} -Wl,--no-demangle -Wl,--hash-style=sysv -Wl,--no-merge-exidx-entries -Wl,--allow-shlib-undefined -Wl,-T $link_script"')
-install_dict = {
-    'binary' : config.spec_install_script,
-    'clang_dir': config.clang_dir,
-    'compile_options': '',
-    'concurrency': multiprocessing.cpu_count() -1,
-    'cross_toolchain_dir': config.cross_toolchain_dir,
-    'target_triple': config.target_triple,
-    'link_script': config.link_script,
-    'spec_config_name': '',
-    'spec_dir': config.spec_dir
-}
-
-s2r_cmd = Template('$binary -s "${ssh_params}" -p $spec_dir -b build_base_${spec_config_name}-nn.0000 -t 5000 -d $target_dir')
-s2r_dict = {
-    'binary' : config.spec2regression_script,
-    'spec_dir': config.spec_dir,
-    'spec_config_name': '',
-    'ssh_params': config.ssh_params,
-    'target_dir': ''
-}
-
 # Builds all extra source code (such as the breakpad client archive) with the requested options. Returns the extra
 # compile options that are required to link with the resulting objects/archives.
 def build_extra(build_dir, compile_options):
@@ -54,14 +31,33 @@ def build_extra(build_dir, compile_options):
     return ret_options
 
 # Build the SPEC benchmarks and do a spec2regression somewhere.
-def build(target_dir, compile_options, spec_config_name):
-    install_dict['compile_options'] = compile_options
-    install_dict['spec_config_name'] = spec_config_name
+def build_spec(target_dir, compile_options, spec_config_name='spec2006'):
+    install_dict = {
+        'binary' : config.spec_install_script,
+        'clang_dir': config.clang_dir,
+        'compile_options': compile_options,
+        'concurrency': multiprocessing.cpu_count() -1,
+        'cross_toolchain_dir': config.cross_toolchain_dir,
+        'target_triple': config.target_triple,
+        'link_script': config.link_script,
+        'spec_config_name': spec_config_name,
+        'spec_dir': config.spec_dir
+    }
+
+    install_cmd = Template('$binary -r -j $concurrency -D -d $spec_dir -c $spec_config_name -t $cross_toolchain_dir -p $target_triple -C $clang_dir '
+            '-O "${compile_options} -Wl,--no-demangle -Wl,--hash-style=sysv -Wl,--no-merge-exidx-entries -Wl,--allow-shlib-undefined -Wl,-T $link_script"')
     subprocess.check_call(shlex.split(install_cmd.substitute(install_dict)))
 
     if target_dir:
-        s2r_dict['spec_config_name'] = spec_config_name
-        s2r_dict['target_dir'] = target_dir
+        s2r_dict = {
+            'binary' : config.spec2regression_script,
+            'spec_dir': config.spec_dir,
+            'spec_config_name': spec_config_name,
+            'ssh_params': config.ssh_params,
+            'target_dir': target_dir
+        }
+
+        s2r_cmd = Template('$binary -s "${ssh_params}" -p $spec_dir -b build_base_${spec_config_name}-nn.0000 -t 5000 -d $target_dir')
         subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_dict)))
 
 ####################################################################################################
@@ -79,14 +75,11 @@ def main(compile_args=[]):
     shutil.rmtree(config.extra_build_dir, True)
     os.mkdir(config.extra_build_dir)
 
-    # Some SPEC configuration
-    spec_config_name = 'spec2006'
-
     # Start by compiling for the default binaries
     print('************ Building default binaries... **********')
     compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.default_padding)] + compile_args
     extra_options = build_extra(os.path.join(config.extra_build_dir, '0'), compile_options)
-    build(support.create_path_for_seeds(config.build_dir), ' '.join(compile_options + extra_options), spec_config_name)
+    build_spec(support.create_path_for_seeds(config.build_dir), ' '.join(compile_options + extra_options))
     print('************ Build finished. **********')
 
     # Then compile for diversfied binaries (stackpadding only)
@@ -95,7 +88,7 @@ def main(compile_args=[]):
         # Adapt the arguments so that now we use the real max padding and add random padding
         compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.max_padding) + ' -mllvm -padseed=' + str(sp_seed)] + compile_args
         extra_options = build_extra(os.path.join(config.extra_build_dir, str(sp_seed)), compile_options)
-        build(support.create_path_for_seeds(config.build_dir, sp_seed), ' '.join(compile_options + extra_options), spec_config_name)
+        build_spec(support.create_path_for_seeds(config.build_dir, sp_seed), ' '.join(compile_options + extra_options))
         print('************ Build finished. **********')
 
 if __name__ == '__main__':
