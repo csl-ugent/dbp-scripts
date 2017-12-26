@@ -4,8 +4,8 @@ import os
 import pyexcel
 
 # Import own modules
+import build_binaries
 import config
-import setup_sp
 import support
 from linker import Map
 
@@ -24,7 +24,7 @@ def main():
 
     # Get all the sizes of the default binaries
     sheets = {}
-    setup_sp.build_spec(build_dir, ' '.join([config.binary_options]), spec_config_name)
+    build_binaries.build_spec(build_dir, ' '.join([config.binary_options]), spec_config_name)
     print('************ Building default binaries... **********')
     for (benchmark, name) in support.benchmarks_gen():
         sheet = pyexcel.Sheet(name=benchmark)
@@ -43,7 +43,7 @@ def main():
         print('************ Building stackpadded binary with SP ' + str(max_padding) + '... **********')
         # Adapt the arguments so that now we use the real max padding and add random padding
         compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(max_padding)]
-        setup_sp.build_spec(build_dir, ' '.join(compile_options), spec_config_name)
+        build_binaries.build_spec(build_dir, ' '.join(compile_options), spec_config_name)
         for (benchmark, name) in support.benchmarks_gen():
             sheet = sheets[benchmark]
             mapfile = os.path.join(build_dir, benchmark, name + '.map')

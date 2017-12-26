@@ -60,12 +60,6 @@ def build_spec(target_dir, compile_options, spec_config_name='spec2006'):
         s2r_cmd = Template('$binary -s "${ssh_params}" -p $spec_dir -b build_base_${spec_config_name}-nn.0000 -t 5000 -d $target_dir')
         subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_dict)))
 
-####################################################################################################
-# First diversification form - stackpadding. The benchmarks are compiled using the patched LLVM.
-# We create templated commands to install SPEC and get the arguments. Then do the installation
-# for the default case and all the stack padding seeds.
-####################################################################################################
-
 def main(compile_args=[]):
     # Use the default template linker script to minimize the differences when we started using the shuffled one based on it
     linker.create_linker_script(None)
@@ -75,21 +69,34 @@ def main(compile_args=[]):
     shutil.rmtree(config.extra_build_dir, True)
     os.mkdir(config.extra_build_dir)
 
-    # Start by compiling for the default binaries
+    # Start by compiling for the default binaries. Build up the compile options, starting from the binary options, adding the default
+    # compile options for the diferent protections, then the compile arguments passed on the command line.
     print('************ Building default binaries... **********')
-    compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.default_padding)] + compile_args
-    extra_options = build_extra(support.create_path_for_seeds(config.extra_build_dir), compile_options)
-    build_spec(support.create_path_for_seeds(config.build_dir), ' '.join(compile_options + extra_options))
+    default_compile_options = [config.binary_options]
+    for protection in seed.get_types():
+        default_compile_options += protection.default_compile_options
+    compile_options = default_compile_options + compile_args
+
+    # We start building the extra binaries, and add their extra compile options to the ones we use to build SPEC.
+    compile_options += build_extra(support.create_path_for_seeds(config.extra_build_dir), compile_options)
+    build_spec(support.create_path_for_seeds(config.build_dir), ' '.join(compile_options))
     print('************ Build finished. **********')
 
-    # Then compile for diversfied binaries (stackpadding only)
-    for sp_seed, in support.seeds_gen(seed.SPSeed):
-        print('************ Building stackpadded binary for seed ' + str(sp_seed) + '... **********')
-        # Adapt the arguments so that now we use the real max padding and add random padding
-        compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.max_padding) + ' -mllvm -padseed=' + str(sp_seed)] + compile_args
-        extra_options = build_extra(support.create_path_for_seeds(config.extra_build_dir, sp_seed), compile_options)
-        build_spec(support.create_path_for_seeds(config.build_dir, sp_seed), ' '.join(compile_options + extra_options))
-        print('************ Build finished. **********')
+    # Next we compile the protected binaries. We build up the compile options, starting from the binary options, adding the
+    # compile options for the different protections (based on the associated seed), then the compile arguments passed on the
+    # command line.
+    for protections in support.build_subsets_gen(seed.get_types(), False):
+        for seeds in support.seeds_gen(*protections):
+            print('************ Building protected binary for ' + ' '.join([repr(s) for s in seeds]) + ' ... **********')
+            compile_options = list(default_compile_options)
+            for s in seeds:
+                compile_options += s.diversify_build()
+            compile_options += compile_args
+
+            # We start building the extra binaries, and add their extra compile options to the ones we use to build SPEC.
+            compile_options += build_extra(support.create_path_for_seeds(config.extra_build_dir, *seeds), compile_options)
+            build_spec(support.create_path_for_seeds(config.build_dir, *seeds), ' '.join(compile_options))
+            print('************ Build finished. **********')
 
 if __name__ == '__main__':
     main()

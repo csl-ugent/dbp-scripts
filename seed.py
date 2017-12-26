@@ -19,6 +19,9 @@ class AbstractSeed:
     def __str__(self):
         return str(self.seed)
 
+    # Static variables
+    default_compile_options = []
+
 # The different protections
 from SP import SPSeed
 from FS import FSSeed

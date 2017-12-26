@@ -10,6 +10,12 @@ class SPSeed(AbstractSeed):
     """The class for SP seeds"""
     idx = len(AbstractSeed.__subclasses__())
 
+    # Static variables
+    default_compile_options = ['-mllvm', '-stackpadding=' + str(config.default_padding)]
+
+    def diversify_build(seed):
+        return ['-mllvm', '-stackpadding=' + str(config.max_padding), '-mllvm', '-padseed=' + str(seed)]
+
     def replay(seed, base_symfile, base_data):
         print('************ Replaying stack padding. **********')
 

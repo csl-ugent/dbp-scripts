@@ -5,7 +5,7 @@ import shutil
 # Import own modules
 import config
 import setup
-import setup_sp
+import build_binaries
 import setup_fs
 import extract_data
 import create_patches
@@ -22,7 +22,7 @@ def complete_run(args, name):
     # Run everything
     config.init_logging()
     setup.main()
-    setup_sp.main(args)
+    build_binaries.main(args)
     setup_fs.main()
     extract_data.main()
     create_patches.main()

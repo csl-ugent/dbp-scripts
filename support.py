@@ -86,6 +86,12 @@ def subsets_gen(s, empty=True):
         for subset in itertools.combinations(s, l):
             yield subset
 
+# Generate the subsets of all sizes for all build-time protections in a set
+def build_subsets_gen(s, empty=True):
+    s = [i for i in s if hasattr(i, 'diversify_build') ]
+    for l in subsets_gen(s, empty):
+        yield l
+
 # This function generates the required number of seeds and writes them in the seed file
 def generate_seeds(nr_of_tuples, root_seed):
     # Seed the PRNG and open the seed file (is truncated)
