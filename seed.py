@@ -1,6 +1,4 @@
-import replay
-
-class Seed:
+class AbstractSeed:
     """A class a seed in general"""
     def __init__(self, seed):
         self.seed = seed
@@ -16,22 +14,16 @@ class Seed:
         return self.seed
 
     def __repr__(self):
-        return 'Seed: ' + str(self.seed) + ' Id: ' + str(self.idx)
+        return type(self).__name__ + ': ' + str(self.seed)
 
     def __str__(self):
         return str(self.seed)
 
-class SPSeed(Seed):
-    """The class for SP seeds"""
-    idx = len(Seed.__subclasses__())
-    replay = replay.replay_sp
+# The different protections
+from SP import SPSeed
+from FS import FSSeed
 
-class FSSeed(Seed):
-    """The class for FS seeds"""
-    idx = len(Seed.__subclasses__())
-    replay = replay.replay_fs
-
-nr_of_types = len(Seed.__subclasses__())
+nr_of_types = len(AbstractSeed.__subclasses__())
 
 def get_types():
-    return Seed.__subclasses__()
+    return AbstractSeed.__subclasses__()

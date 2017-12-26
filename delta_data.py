@@ -4,7 +4,6 @@ import subprocess
 
 # Import own modules
 import config
-import seed
 
 section_name = '.delta_data'
 
