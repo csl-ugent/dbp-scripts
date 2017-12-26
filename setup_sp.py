@@ -63,10 +63,6 @@ def build(target_dir, compile_options, spec_config_name):
         s2r_dict['target_dir'] = target_dir
         subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_dict)))
 
-# This only installs SPEC, and does not build anything
-def install_spec():
-    subprocess.check_call([config.spec_install_script, '-j', str(multiprocessing.cpu_count()), '-i', '-d', config.spec_dir])
-
 ####################################################################################################
 # First diversification form - stackpadding. The benchmarks are compiled using the patched LLVM.
 # We create templated commands to install SPEC and get the arguments. Then do the installation
@@ -81,10 +77,6 @@ def main(compile_args=[]):
     shutil.rmtree(config.build_dir, True)
     shutil.rmtree(config.extra_build_dir, True)
     os.mkdir(config.extra_build_dir)
-
-    # Install SPEC if necessary
-    if not os.path.exists(config.spec_dir):
-        install_spec()
 
     # Some SPEC configuration
     spec_config_name = 'spec2006'

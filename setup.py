@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import gnupg
+import multiprocessing
 import os
 import subprocess
 
@@ -40,6 +41,10 @@ def main():
         os.mkdir(config.breakpad_server_dir)
         subprocess.check_call([os.path.join(config.breakpad_dir, 'configure')], cwd=config.breakpad_server_dir)
         subprocess.check_call(['make'], cwd=config.breakpad_server_dir)
+
+    # Install SPEC if necessary (this does not build any benchmarks)
+    if not os.path.exists(config.spec_dir):
+        subprocess.check_call([config.spec_install_script, '-j', str(multiprocessing.cpu_count()), '-i', '-d', config.spec_dir])
 
 if __name__ == '__main__':
     main()
