@@ -3,6 +3,7 @@ import subprocess
 
 # Import own modules
 import config
+import support
 from seed import AbstractSeed
 
 class SPSeed(AbstractSeed):
@@ -28,7 +29,7 @@ class SPSeed(AbstractSeed):
 
         # Use the replay tool again, but this time for the extra source code that was built
         for line in subprocess.check_output([os.path.join(config.replay_dir, 'sp'), str(seed), str(config.max_padding),
-            os.path.join(config.extra_build_dir, '0', config.breakpad_archive), os.path.join(os.path.dirname(base_data), 'stackpadding.list')], universal_newlines=True).splitlines():
+            os.path.join(support.create_path_for_seeds(config.extra_build_dir), config.breakpad_archive), os.path.join(os.path.dirname(base_data), 'stackpadding.list')], universal_newlines=True).splitlines():
 
             # Split the line and decode the tokens
             tokens = line.split()

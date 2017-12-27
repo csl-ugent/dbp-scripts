@@ -17,7 +17,7 @@ import support
 def build_extra(build_dir, compile_options):
     # Create the build directory (after cleaning up possible previous run)
     shutil.rmtree(build_dir, True)
-    os.mkdir(build_dir)
+    os.makedirs(build_dir)
     ret_options = [config.breakpad_options]
 
     # Build the breakpad archive
@@ -78,7 +78,7 @@ def main(compile_args=[]):
     # Start by compiling for the default binaries
     print('************ Building default binaries... **********')
     compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.default_padding)] + compile_args
-    extra_options = build_extra(os.path.join(config.extra_build_dir, '0'), compile_options)
+    extra_options = build_extra(support.create_path_for_seeds(config.extra_build_dir), compile_options)
     build_spec(support.create_path_for_seeds(config.build_dir), ' '.join(compile_options + extra_options))
     print('************ Build finished. **********')
 
@@ -87,7 +87,7 @@ def main(compile_args=[]):
         print('************ Building stackpadded binary for seed ' + str(sp_seed) + '... **********')
         # Adapt the arguments so that now we use the real max padding and add random padding
         compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(config.max_padding) + ' -mllvm -padseed=' + str(sp_seed)] + compile_args
-        extra_options = build_extra(os.path.join(config.extra_build_dir, str(sp_seed)), compile_options)
+        extra_options = build_extra(support.create_path_for_seeds(config.extra_build_dir, sp_seed), compile_options)
         build_spec(support.create_path_for_seeds(config.build_dir, sp_seed), ' '.join(compile_options + extra_options))
         print('************ Build finished. **********')
 

@@ -55,7 +55,7 @@ def extract_data(seed_tuple, subset, pickle_symfiles=False):
 
         # Copy over the stackpadding list for the extra build archives/objects (these are the same for every benchmark)
         if not subset:
-            shutil.copy2(os.path.join(config.extra_build_dir, str(orig_sp_seed), 'stackpadding.list'), os.path.join(config.data_dir, relpath))
+            shutil.copy2(os.path.join(support.create_path_for_seeds(config.extra_build_dir, orig_sp_seed), 'stackpadding.list'), os.path.join(config.data_dir, relpath))
     except Exception:
         logging.getLogger().exception('Data extraction failed for ' + relpath)
 
