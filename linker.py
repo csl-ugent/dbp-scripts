@@ -172,7 +172,7 @@ def create_linker_script(sections, path=config.link_script):
         # Write the first part
         f.write(ld1.read())
 
-        # Write the shuffled array of sections
+        # Write the specified array of sections
         if sections is not None:
             for section_list in sections:
                 for section in section_list:

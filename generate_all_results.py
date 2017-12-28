@@ -6,7 +6,7 @@ import shutil
 import config
 import setup
 import build_binaries
-import setup_fs
+import link_binaries
 import extract_data
 import create_patches
 import inject_delta_data
@@ -23,7 +23,7 @@ def complete_run(args, name):
     config.init_logging()
     setup.main()
     build_binaries.main(args)
-    setup_fs.main()
+    link_binaries.main()
     extract_data.main()
     create_patches.main()
     inject_delta_data.main(False)

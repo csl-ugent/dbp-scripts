@@ -8,6 +8,12 @@ class FSSeed(AbstractSeed):
     """The class for FS seeds"""
     idx = len(AbstractSeed.__subclasses__())
 
+    def diversify_link(seed, pre_sections, main_sections):
+        # Shuffle the section array, make sure to convert the seed to INT before seeding!
+        random.seed(seed)
+        random.shuffle(main_sections)
+        return pre_sections, main_sections
+
     # We replay the shuffling of functions/sections using the seed, then predict the changes in addresses
     # that occur due to alignment.
     def replay(seed, base_symfile, base_data):

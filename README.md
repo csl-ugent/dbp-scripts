@@ -17,7 +17,7 @@ The configuration can be done in the config.py file. The things that can be set 
 The tests can be recreated using the generate_all_results.py script. For every combination of compilation flags it generates data by invoking these scripts in order:
 - setup.py: Does some general setup such as creating helper tools and generating seeds.
 - build_binaries.py: Build the binaries, with protections.
-- setup_fs.py: Protect the binaries with function shuffling.
+- link_binaries.py: Apply the protections that are implemented at linker level.
 - extract_data.py: Extract all the data (symfiles and others) that is required to generate the patches.
 - create_patches.py: Creates the patches for all binaries and different combinations of protections. The patches are immediately tested for correctness.
 - inject_delta_data.py: Creates the ∆data and injects it into the binaries.

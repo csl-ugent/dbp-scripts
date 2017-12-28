@@ -61,7 +61,7 @@ def build_spec(target_dir, compile_options, spec_config_name='spec2006'):
         subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_dict)))
 
 def main(compile_args=[]):
-    # Use the default template linker script to minimize the differences when we started using the shuffled one based on it
+    # Use the default template linker script to minimize the differences when we start protecting at link time
     linker.create_linker_script(None)
 
     # Clean up from possible previous runs

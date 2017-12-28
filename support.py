@@ -92,6 +92,12 @@ def build_subsets_gen(s, empty=True):
     for l in subsets_gen(s, empty):
         yield l
 
+# Generate the subsets of all sizes for all link-time protections in a set
+def link_subsets_gen(s, empty=True):
+    s = [i for i in s if hasattr(i, 'diversify_link') ]
+    for l in subsets_gen(s, empty):
+        yield l
+
 # This function generates the required number of seeds and writes them in the seed file
 def generate_seeds(nr_of_tuples, root_seed):
     # Seed the PRNG and open the seed file (is truncated)
