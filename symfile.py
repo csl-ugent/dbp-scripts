@@ -279,12 +279,12 @@ class SymFile:
     def augment(self, linkermap, build_dir):
         # Determine how many of each kind of functions there are
         for iii, func in enumerate(self.funcs):
-            if linkermap.shuffle_sections[0].address <= (func.address + linkermap.text_start_address):
+            if linkermap.main_sections[0].address <= (func.address + linkermap.text_start_address):
                 self.nr_of_pre_funcs = iii
                 break
 
-        self.nr_of_shuffle_funcs = len(linkermap.shuffle_sections)
-        self.post_funcs_idx = self.nr_of_pre_funcs + self.nr_of_shuffle_funcs
+        self.nr_of_main_funcs = len(linkermap.main_sections)
+        self.post_funcs_idx = self.nr_of_pre_funcs + self.nr_of_main_funcs
 
         # For the pre functions we can't be certain to have section information. This is because
         # -ffunction-sections doesn't always work for initializers. Try to find the corresponding
@@ -293,16 +293,16 @@ class SymFile:
             func_section = linker.find_section_for_function(func, linkermap.pre_sections)
             func.augment(func_section, build_dir)
 
-        # For the shuffle functions we have section information, copy it over to the functions.
-        for (func, section) in zip(self.funcs[self.nr_of_pre_funcs:], linkermap.shuffle_sections):
+        # For the main functions we have section information, copy it over to the functions.
+        for (func, section) in zip(self.funcs[self.nr_of_pre_funcs:], linkermap.main_sections):
             func.augment(section, build_dir)
 
         # For the functions at the end, there was no ffunction-sections. Therefore, with possibly multiple functions in a section, we're
         # forced to start searcing the corresponding section. If it doesn't exist, we'll use defaults.
         # We will attempt to determine offsets though from the previous function though.
         if self.post_funcs_idx < len(self.funcs):
-            # Get the address at the end of the last shuffled section
-            address = self.funcs[self.post_funcs_idx -1].address + linkermap.shuffle_sections[-1].size
+            # Get the address at the end of the last main section
+            address = self.funcs[self.post_funcs_idx -1].address + linkermap.main_sections[-1].size
             for func in self.funcs[self.post_funcs_idx:]:
                 # Get the offset between its address and the address of the last known function
                 func.offset = func.address - address

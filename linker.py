@@ -120,7 +120,7 @@ class Map:
         with open(map_path, 'r') as f_map:
             self.discarded_sections = []
             self.pre_sections = []
-            self.shuffle_sections = []
+            self.main_sections = []
             self.post_sections = []
 
             # The map consists of several parts which we process differently
@@ -140,7 +140,7 @@ class Map:
                     continue
 
                 if '*(.text.[a-zA-Z0-9]*' in line:
-                    target_sections = self.shuffle_sections
+                    target_sections = self.main_sections
                     continue
 
                 if '*(.text.*' in line:

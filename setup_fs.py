@@ -46,7 +46,7 @@ def main():
         # after the sections that ARE shuffled. To avoid this, we also keep all discarded sections, and then create N rules for the
         # section (one for each object). These rules stay together during shuffling, thus guaranteeing the right location of the section.
         shuffle_sections = []
-        for section in linkermap.shuffle_sections:
+        for section in linkermap.main_sections:
             rule_list = []
 
             # Create the linker rules and insert them in the list

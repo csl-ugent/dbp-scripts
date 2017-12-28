@@ -12,7 +12,7 @@ from linker import Map
 def get_functions(mapfile):
     linkermap = Map(mapfile)
     functions = []
-    for section in itertools.chain(linkermap.pre_sections, linkermap.shuffle_sections):
+    for section in itertools.chain(linkermap.pre_sections, linkermap.main_sections):
         name = section.name[len('.text.'):]
         functions.append((name, section.size))
 
