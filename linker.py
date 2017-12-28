@@ -167,8 +167,8 @@ class Map:
                     target_sections.append(Section(f_map, line, alignment_info))
 
 # Creates a linker script in which the text sections passed as an argument are placed in explicit order. If no sections are given, creates the default linker script.
-def create_linker_script(sections):
-    with open(os.path.join(config.tmp_dir, 'link.xc'), 'w') as f, open(os.path.join(config.ld_dir, 'ld1'), 'r') as ld1, open(os.path.join(config.ld_dir, 'ld2'), 'r') as ld2:
+def create_linker_script(sections, path=config.link_script):
+    with open(path, 'w') as f, open(os.path.join(config.ld_dir, 'ld1'), 'r') as ld1, open(os.path.join(config.ld_dir, 'ld2'), 'r') as ld2:
         # Write the first part
         f.write(ld1.read())
 
