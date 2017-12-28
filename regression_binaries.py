@@ -15,7 +15,7 @@ def regression(build_dir):
 def main():
     print('************ Regression testing protected binaries **********')
     regression(support.create_path_for_seeds(config.build_dir))
-    for seed_tuple in support.seeds_gen():
+    for seed_tuple in support.all_seeds_gen():
         for subset in support.subsets_gen(seed_tuple, False):
             regression(support.create_path_for_seeds(config.build_dir, *subset))
 

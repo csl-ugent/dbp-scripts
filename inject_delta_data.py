@@ -35,7 +35,7 @@ def main(encrypt=True):
     # Inject the delta data for every binary
     print('************ Injecting delta data **********')
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        for seed_tuple in support.seeds_gen():
+        for seed_tuple in support.all_seeds_gen():
             for subset in support.subsets_gen(seed_tuple, False):
                 for (benchmark, name) in support.benchmarks_gen():
                     executor.submit(inject_data, benchmark, name, subset, encrypt)

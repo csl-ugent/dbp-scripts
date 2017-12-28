@@ -26,7 +26,7 @@ def main():
     sheet.column += sizes + ['AVG'] + [''] * len(rownames)
     sheet.column += sizes + ['MAX'] + [''] * len(rownames)
 
-    for seeds in support.seeds_gen():
+    for seeds in support.all_seeds_gen():
         # Get all the sizes of the diversified symfiles
         sizes = [''] * (len(rownames) +2)
         for (benchmark, name) in support.benchmarks_gen():

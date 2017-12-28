@@ -35,7 +35,7 @@ def main():
     # Create the patches by submitting tasks to the executor
     print('************ Creating patches **********')
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        for seed_tuple in support.seeds_gen():
+        for seed_tuple in support.all_seeds_gen():
             for subset in support.subsets_gen(seed_tuple, False):
                 for (benchmark, _) in support.benchmarks_gen():
                     executor.submit(create_patch, benchmark, subset)

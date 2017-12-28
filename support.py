@@ -72,10 +72,13 @@ def seeds_gen(*types):
     with open(config.seed_file, 'r') as f:
         seeds = [int(line.rstrip()) for line in f]
         assert len(seeds) % seed.nr_of_types == 0, 'The number of seeds in the file should be a multiple of ' + str(seed.nr_of_types) + '.'
-        if not types:
-            types = seed.get_types()
         for iii in range(len(seeds) // seed.nr_of_types):
             yield [cls(seeds[(seed.nr_of_types * iii) + cls.idx]) for cls in types]
+
+# Generator for the seeds, of all types.
+def all_seeds_gen():
+    for s in seeds_gen(*seed.get_types()):
+        yield s
 
 # Generate the subsets of all sizes for a certain set (with or without the empty subset).
 def subsets_gen(s, empty=True):

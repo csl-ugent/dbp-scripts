@@ -18,7 +18,7 @@ def main():
     sheet.column += [''] * (len(rownames) +1) + ['AVG'] + [''] * len(rownames)
     sheet.column += [''] * (len(rownames) +1) + ['MAX'] + [''] * len(rownames)
 
-    for seeds in support.seeds_gen():
+    for seeds in support.all_seeds_gen():
         # Empty cell
         times = ['']
 

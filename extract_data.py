@@ -65,7 +65,7 @@ def main():
 
     # Get the seeds and extract the data for the associated build
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        for seed_tuple in support.seeds_gen():
+        for seed_tuple in support.all_seeds_gen():
             for subset in support.subsets_gen(seed_tuple, False):
                 executor.submit(extract_data, seed_tuple, subset)
 
