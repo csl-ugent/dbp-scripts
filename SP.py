@@ -12,6 +12,7 @@ class SPSeed(AbstractSeed):
 
     # Static variables
     default_compile_options = ['-mllvm', '-stackpadding=' + str(config.default_padding)]
+    opportunity_log = 'stackpadding.list'
 
     def diversify_build(seed):
         return ['-mllvm', '-stackpadding=' + str(config.max_padding), '-mllvm', '-padseed=' + str(seed)]
@@ -22,7 +23,7 @@ class SPSeed(AbstractSeed):
         # Use the replay tool to find the stack offset for every function
         sections = {}
         for line in subprocess.check_output([os.path.join(config.replay_dir, 'sp'), str(seed), str(config.max_padding),
-            os.readlink(os.path.join(base_data, 'build')), os.path.join(base_data, 'stackpadding.list')], universal_newlines=True).splitlines():
+            os.readlink(os.path.join(base_data, 'build')), os.path.join(base_data, seed.opportunity_log)], universal_newlines=True).splitlines():
 
             # Split the line and decode the tokens
             tokens = line.split()
@@ -35,7 +36,7 @@ class SPSeed(AbstractSeed):
 
         # Use the replay tool again, but this time for the extra source code that was built
         for line in subprocess.check_output([os.path.join(config.replay_dir, 'sp'), str(seed), str(config.max_padding),
-            os.path.join(support.create_path_for_seeds(config.extra_build_dir), config.breakpad_archive), os.path.join(os.path.dirname(base_data), 'stackpadding.list')], universal_newlines=True).splitlines():
+            os.path.join(support.create_path_for_seeds(config.extra_build_dir), config.breakpad_archive), os.path.join(os.path.dirname(base_data), seed.opportunity_log)], universal_newlines=True).splitlines():
 
             # Split the line and decode the tokens
             tokens = line.split()

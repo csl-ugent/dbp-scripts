@@ -21,6 +21,7 @@ class AbstractSeed:
 
     # Static variables
     default_compile_options = []
+    opportunity_log = ''
 
 # The different protections
 from SP import SPSeed

@@ -9,15 +9,12 @@ import subprocess
 # Import own modules
 import config
 import linker
-import seed
 import support
 from symfile import SymFile
 
 def extract_data(seed_tuple, subset, pickle_symfiles=False):
     try:
         # Unpack all the seeds we need and create the relative path
-        (orig_sp_seed, orig_fs_seed) = support.get_seeds_from_tuple(seed_tuple, seed.SPSeed, seed.FSSeed)
-        (sp_seed, fs_seed) = support.get_seeds_from_tuple(subset, seed.SPSeed, seed.FSSeed)
         relpath = support.relpath_for_seeds(*subset)
 
         print('************ Extracting for path ' + relpath + ' **********')
@@ -32,12 +29,12 @@ def extract_data(seed_tuple, subset, pickle_symfiles=False):
                 # Extract the actual symfile using dump_syms. This tool creates a LOT of warnings so we redirect stderr to /dev/null
                 subprocess.check_call([config.dump_syms, os.path.join(build_dir, name)], stdout=f_sym, stderr=subprocess.DEVNULL)
 
-            # Copy over the opportunity logs
-            if not sp_seed:
-                shutil.copy2(os.path.join(support.create_path_for_seeds(config.build_dir, orig_sp_seed, fs_seed), benchmark, 'stackpadding.list'), data_dir)
-
             # If we're dealing with the base we have to do some more stuff
             if not subset:
+                # For every protection, copy over the opportunity log, if any
+                for s in [s for s in seed_tuple if s.opportunity_log]:
+                    shutil.copy2(os.path.join(support.create_path_for_seeds(config.build_dir, s), benchmark, s.opportunity_log), data_dir)
+
                 # Copy over the linker map
                 shutil.copy2(os.path.join(build_dir, name + '.map'), os.path.join(data_dir, 'map'))
 
@@ -53,9 +50,10 @@ def extract_data(seed_tuple, subset, pickle_symfiles=False):
                     with open(os.path.join(data_dir, 'pickled_symfile'), 'wb') as f_pickle:
                         pickle.dump(symfile, f_pickle)
 
-        # Copy over the stackpadding list for the extra build archives/objects (these are the same for every benchmark)
         if not subset:
-            shutil.copy2(os.path.join(support.create_path_for_seeds(config.extra_build_dir, orig_sp_seed), 'stackpadding.list'), os.path.join(config.data_dir, relpath))
+            # For every protection, copy over the opportunity logs for the extra build archives/objects (which are the same for every benchmark), if any
+            for s in [s for s in seed_tuple if s.opportunity_log]:
+                shutil.copy2(os.path.join(support.create_path_for_seeds(config.extra_build_dir, s), s.opportunity_log), os.path.join(config.data_dir, relpath))
     except Exception:
         logging.getLogger().exception('Data extraction failed for ' + relpath)
 
