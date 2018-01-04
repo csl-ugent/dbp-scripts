@@ -26,6 +26,7 @@ class AbstractSeed:
 # The different protections
 from SP import SPSeed
 from FS import FSSeed
+from NOP import NOPSeed
 
 nr_of_types = len(AbstractSeed.__subclasses__())
 

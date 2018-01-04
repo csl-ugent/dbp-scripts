@@ -7,6 +7,7 @@ default_padding = 8
 gpg_passphrase = 'breakpad_pass'
 max_padding = 256
 max_seed = 1000000
+nopinsertion_chance = 20
 nr_of_measurements = 30
 root_seed = 101
 ssh_params = # You should put the parameters required to SSH to your testing board here (e.g. '-p 915 babrath@arndale')
