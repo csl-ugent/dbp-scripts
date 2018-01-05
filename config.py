@@ -50,7 +50,7 @@ clang_dir =
 gcc_toolchain_dir =
 regression_dir =
 
-# Paths for tools present in those repostories
+# Paths for tools present in those repositories
 breakpad_archive = os.path.join('src', 'client', 'linux', 'libbreakpad_client.a')
 clang_bin = os.path.join(clang_dir, 'bin', 'clang')
 dump_syms = os.path.join(breakpad_server_dir, 'src', 'tools', 'linux', 'dump_syms', 'dump_syms')
