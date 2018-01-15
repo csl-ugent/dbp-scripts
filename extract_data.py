@@ -4,6 +4,7 @@ import logging
 import os
 import pickle
 import shutil
+import seed
 import subprocess
 
 # Import own modules
@@ -12,7 +13,7 @@ import linker
 import support
 from symfile import SymFile
 
-def extract_data(seed_tuple, subset, pickle_symfiles=False):
+def extract_data(subset, pickle_symfiles=False):
     try:
         # Unpack all the seeds we need and create the relative path
         relpath = support.relpath_for_seeds(*subset)
@@ -32,8 +33,8 @@ def extract_data(seed_tuple, subset, pickle_symfiles=False):
             # If we're dealing with the base we have to do some more stuff
             if not subset:
                 # For every protection, copy over the opportunity log, if any
-                for s in [s for s in seed_tuple if s.opportunity_log]:
-                    shutil.copy2(os.path.join(support.create_path_for_seeds(config.build_dir, s), benchmark, s.opportunity_log), data_dir)
+                for opportunity_log in [s.opportunity_log for s in seed.get_types() if s.opportunity_log]:
+                    shutil.copy2(os.path.join(support.create_path_for_seeds(config.build_dir), benchmark, opportunity_log), data_dir)
 
                 # Copy over the linker map
                 shutil.copy2(os.path.join(build_dir, name + '.map'), os.path.join(data_dir, 'map'))
@@ -52,8 +53,8 @@ def extract_data(seed_tuple, subset, pickle_symfiles=False):
 
         if not subset:
             # For every protection, copy over the opportunity logs for the extra build archives/objects (which are the same for every benchmark), if any
-            for s in [s for s in seed_tuple if s.opportunity_log]:
-                shutil.copy2(os.path.join(support.create_path_for_seeds(config.extra_build_dir, s), s.opportunity_log), os.path.join(config.data_dir, relpath))
+            for opportunity_log in [s.opportunity_log for s in seed.get_types() if s.opportunity_log]:
+                shutil.copy2(os.path.join(support.create_path_for_seeds(config.extra_build_dir), opportunity_log), os.path.join(config.data_dir, relpath))
     except Exception:
         logging.getLogger().exception('Data extraction failed for ' + relpath)
 
@@ -65,9 +66,9 @@ def main():
     with concurrent.futures.ProcessPoolExecutor() as executor:
         for seed_tuple in support.all_seeds_gen():
             for subset in support.subsets_gen(seed_tuple, False):
-                executor.submit(extract_data, seed_tuple, subset)
+                executor.submit(extract_data, subset)
 
-        executor.submit(extract_data, seed_tuple, ())
+        executor.submit(extract_data, ())
 
 if __name__ == '__main__':
     main()
