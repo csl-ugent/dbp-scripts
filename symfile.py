@@ -119,12 +119,17 @@ class Function:
         return None
 
     # Rebuild the meta information (address, size, meta records) using the values of the lines
-    # and the offset between the start of the function and the first line.
-    def rebuild_meta_info(self, first_line_offset):
-        new_address = self.lines[0].address - first_line_offset
+    # and the offset between the start of the function and the first line. Some functions don't
+    # have any lines, for these we don't calculate the new address but use the one passed as
+    # an argument. It's also assumed their size stays constant.
+    def rebuild_meta_info(self, first_line_offset, new_address):
+        if self.lines:
+            new_address = self.lines[0].address - first_line_offset
+
         func_offset = new_address - self.address
         self.address = new_address
-        self.size = (self.lines[-1].address - self.address) + self.lines[-1].size
+        if self.lines:
+            self.size = (self.lines[-1].address - self.address) + self.lines[-1].size
         self.update_meta_records(func_offset)
 
     # Update the address for a function and its lines
