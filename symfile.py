@@ -98,16 +98,27 @@ class Function:
         self.lines.append(Line(line))
 
     # Augment the function with section information (such as alignment). If no section was provided,
-    # use default values.
-    def augment(self, section, build_dir):
-        if section:
+    # we will try to find it, using the linkermap. If we can find it by name, use the detailed
+    # information provided by the linkermap. If found by address, use default information and take
+    # only the section_name. We will search for corresponding section either in the pre or the post
+    # sections in the linkermap, depending on the pre_sections argument.
+    def augment(self, section, build_dir, linkermap=None, pre_sections=True):
+        if not section:
+            section, named = linker.find_section_for_function(self, linkermap, linkermap.pre_sections if pre_sections else linkermap.post_sections)
+        else:
+            named = True
+
+        if named:
             self.alignment = section.alignment
             self.section_size = section.size
             self.section_name = os.path.join(build_dir, section.obj) + ':' + section.name
         else:
             self.alignment = 4
             self.section_size = self.size
-            self.section_name = None
+            name = ' '.join(self.name)
+            if name == '<name omitted>':
+                name = 'startup'
+            self.section_name = os.path.join(build_dir, section.obj) + ':.text.' + name
 
     # Get the stack record containing the stack offset
     def get_stack_offset_record(self):
@@ -292,19 +303,19 @@ class SymFile:
         self.post_funcs_idx = self.nr_of_pre_funcs + self.nr_of_main_funcs
 
         # For the pre functions we can't be certain to have section information. This is because
-        # -ffunction-sections doesn't always work for initializers. Try to find the corresponding
-        # section and copy its values, but if it doesn't exist just use defaults.
+        # -ffunction-sections doesn't always work for initializers. We will provide the linkermap
+        # to the augment function to the try to find it.
         for func in self.funcs[:self.nr_of_pre_funcs]:
-            func_section = linker.find_section_for_function(func, linkermap.pre_sections)
-            func.augment(func_section, build_dir)
+            func.augment(None, build_dir, linkermap, True)
 
         # For the main functions we have section information, copy it over to the functions.
         for (func, section) in zip(self.funcs[self.nr_of_pre_funcs:], linkermap.main_sections):
             func.augment(section, build_dir)
 
-        # For the functions at the end, there was no ffunction-sections. Therefore, with possibly multiple functions in a section, we're
-        # forced to start searcing the corresponding section. If it doesn't exist, we'll use defaults.
-        # We will attempt to determine offsets though from the previous function though.
+        # For the functions at the end, there was no ffunction-sections. Therefore, with possibly
+        # multiple functions in a section, we're forced to start searching the corresponding section.
+        # Therefore we provide the linkermap to the augment function. We will attempt to determine
+        # offsets though from the previous function though.
         if self.post_funcs_idx < len(self.funcs):
             # Get the address at the end of the last main section
             address = self.funcs[self.post_funcs_idx -1].address + linkermap.main_sections[-1].size
@@ -313,9 +324,8 @@ class SymFile:
                 func.offset = func.address - address
                 address = func.address
 
-                # Attempt to find the corresponding section and copy its values.
-                func_section = linker.find_section_for_function(func, linkermap.post_sections)
-                func.augment(func_section, build_dir)
+                # Augment by attempting to find the corresponding section and copy its values.
+                func.augment(None, build_dir, linkermap, False)
 
     # Return the Function that is at this address, or None if nothing is found
     def get_func_by_address(self, address):

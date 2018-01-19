@@ -182,8 +182,14 @@ def create_linker_script(sections, path=config.link_script):
         f.write(ld2.read())
 
 # Try to find the corresponding section if we can (can't be found for crtbegin objects for example).
-def find_section_for_function(func, sections):
+# First we try to find it through name, but if that doesn't work we'll locate it through address.
+# In the second case this probably means there's more functions than just the one requested in the
+# section. We distinguish between the two cases through the second return value.
+def find_section_for_function(func, linkermap, sections):
     for section in sections:
         if section.name == '.text.' + ' '.join(func.name):
-            return section
-    return None
+            return section, True
+
+    for section in sections:
+        if section.address <= (func.address + linkermap.text_start_address) and (func.address + func.size + linkermap.text_start_address) <= (section.address + section.size):
+            return section, False
