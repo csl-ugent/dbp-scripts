@@ -4,7 +4,7 @@ import shutil
 
 # Import own modules
 import config
-import setup
+import init
 import build_binaries
 import link_binaries
 import extract_data
@@ -20,8 +20,7 @@ import report_symfile_sizes
 
 def complete_run(args, name):
     # Run everything
-    config.init_logging()
-    setup.main()
+    init.main()
     build_binaries.main(args)
     link_binaries.main()
     extract_data.main()
