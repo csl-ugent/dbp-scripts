@@ -22,30 +22,8 @@ class SPSeed(AbstractSeed):
 
         # Use the replay tool to find the stack offset for every function
         sections = {}
-        for line in subprocess.check_output([os.path.join(config.replay_dir, 'sp'), str(seed), str(config.max_padding),
-            os.readlink(os.path.join(base_data, 'build')), os.path.join(base_data, seed.opportunity_log)], universal_newlines=True).splitlines():
-
-            # Split the line and decode the tokens
-            tokens = line.split()
-            name = tokens[0]
-            offset = int(tokens[1])
-
-            # Add the section with the introduced diff
-            assert name not in sections, 'Duplicate section!'
-            sections[name] = offset
-
-        # Use the replay tool again, but this time for the extra source code that was built
-        for line in subprocess.check_output([os.path.join(config.replay_dir, 'sp'), str(seed), str(config.max_padding),
-            os.path.join(support.create_path_for_seeds(config.extra_build_dir), config.breakpad_archive), os.path.join(os.path.dirname(base_data), seed.opportunity_log)], universal_newlines=True).splitlines():
-
-            # Split the line and decode the tokens
-            tokens = line.split()
-            name = tokens[0]
-            offset = int(tokens[1])
-
-            # Add the section with the introduced diff
-            assert name not in sections, 'Duplicate section!'
-            sections[name] = offset
+        seed.run_replay_tool(sections, os.readlink(os.path.join(base_data, 'build')), os.path.join(base_data, seed.opportunity_log))
+        seed.run_replay_tool(sections, os.path.join(support.create_path_for_seeds(config.extra_build_dir), config.breakpad_archive), os.path.join(os.path.dirname(base_data), seed.opportunity_log))
 
         for func in base_symfile.funcs:
             # Get the stack offset introduced
@@ -56,3 +34,16 @@ class SPSeed(AbstractSeed):
                 # This record may very well not exist, such as when a frame pointer is used.
                 if base_record:
                     base_record.set_frame_size(base_record.get_frame_size() + offset - config.default_padding)
+
+    def run_replay_tool(seed, sections, build_prefix, opportunity_log):
+        for line in subprocess.check_output([os.path.join(config.replay_dir, 'sp'), str(seed), str(config.max_padding),
+            build_prefix, opportunity_log], universal_newlines=True).splitlines():
+
+            # Split the line and decode the tokens
+            tokens = line.split()
+            name = tokens[0]
+            offset = int(tokens[1])
+
+            # Add the section with the introduced diff
+            assert name not in sections, 'Duplicate section!'
+            sections[name] = offset
