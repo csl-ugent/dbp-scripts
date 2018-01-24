@@ -20,13 +20,24 @@ def build_extra(build_dir, compile_options):
     os.makedirs(build_dir)
     ret_options = [config.breakpad_options]
 
+    print('************ Building dump object **********')
+    dump_build_dir = os.path.join(build_dir, 'dump')
+    shutil.copytree(config.dump_dir, dump_build_dir)
+    subprocess.check_call(['make', 'CXX=' + config.clang_bin, 'CPPFLAGS=' + ' '.join(compile_options) + ' -I' + os.path.join(config.breakpad_dir, 'src')], cwd=dump_build_dir, stdout=subprocess.DEVNULL)
+    ret_options.append('-Wl,--library-path=' + dump_build_dir)
+    ret_options.append('-Wl,--library=:dump.o')
+    os.symlink(dump_build_dir, os.path.join(dump_build_dir, 'build')) # Build prefix
+
     # Build the breakpad archive
     print('************ Building breakpad archive **********')
+    breakpad_build_dir = os.path.join(build_dir, 'breakpad')
+    os.makedirs(breakpad_build_dir)
     subprocess.check_call([os.path.join(config.breakpad_dir, 'configure'), '--host=' + config.target_triple, '--disable-tools', '--disable-processor',
-        'CC=' + config.clang_bin, 'CXX=' + config.clang_bin, 'CPPFLAGS=' + ' '.join(compile_options)], cwd=build_dir, stdout=subprocess.DEVNULL)
-    subprocess.check_call(['make'], cwd=build_dir, stdout=subprocess.DEVNULL)
-    ret_options.append('-Wl,--library-path=' + build_dir)
+        'CC=' + config.clang_bin, 'CXX=' + config.clang_bin, 'CPPFLAGS=' + ' '.join(compile_options)], cwd=breakpad_build_dir, stdout=subprocess.DEVNULL)
+    subprocess.check_call(['make'], cwd=breakpad_build_dir, stdout=subprocess.DEVNULL)
+    ret_options.append('-Wl,--library-path=' + breakpad_build_dir)
     ret_options.append('-Wl,--library=:' + config.breakpad_archive)
+    os.symlink(os.path.join(breakpad_build_dir, config.breakpad_archive), os.path.join(breakpad_build_dir, 'build')) # Build prefix
 
     return ret_options
 

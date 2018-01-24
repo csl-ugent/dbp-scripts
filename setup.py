@@ -26,9 +26,6 @@ def main():
     print('************ Making replay tools **********')
     subprocess.check_call(['make', 'all', 'LLVM_DIR=' + config.clang_dir], cwd=config.replay_dir)
 
-    print('************ Making dump tools **********')
-    subprocess.check_call(['make', 'all', 'CXX=' + config.clang_bin, 'CPPFLAGS=' + config.binary_options + ' -I' + os.path.join(config.breakpad_dir, 'src')], cwd=config.dump_dir)
-
     print('************ Making breakpad tools **********')
     if not os.path.exists(config.breakpad_server_dir):
         os.mkdir(config.breakpad_server_dir)

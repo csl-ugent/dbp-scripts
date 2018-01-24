@@ -52,9 +52,15 @@ def extract_data(subset, pickle_symfiles=False):
                         pickle.dump(symfile, f_pickle)
 
         if not subset:
-            # For every protection, copy over the opportunity logs for the extra build archives/objects (which are the same for every benchmark), if any
-            for opportunity_log in [s.opportunity_log for s in seed.get_types() if s.opportunity_log]:
-                shutil.copy2(os.path.join(support.create_path_for_seeds(config.extra_build_dir), opportunity_log), os.path.join(config.data_dir, relpath))
+            data_dir = os.path.join(config.data_dir, relpath)
+            # For every protection, copy over the opportunity logs for the extra build archives/objects (which are the same for every benchmark), if any.
+            # Also copy over the build_prefix (in symlink form).
+            for a in os.listdir(support.create_path_for_seeds(config.extra_build_dir)):
+                a_path = os.path.join(support.create_path_for_seeds(config.extra_build_dir), a)
+                os.symlink(os.readlink(os.path.join(a_path, 'build')), os.path.join(data_dir, 'build.' + a))
+                for opportunity_log in [s.opportunity_log for s in seed.get_types() if s.opportunity_log]:
+                    shutil.copy2(os.path.join(a_path, opportunity_log), os.path.join(data_dir, opportunity_log + '.' + a))
+
     except Exception:
         logging.getLogger().exception('Data extraction failed for ' + relpath)
 

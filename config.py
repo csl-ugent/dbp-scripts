@@ -61,5 +61,5 @@ spec_install_script = os.path.join(regression_dir, 'speccpu2006', 'install.sh')
 spec2regression_script = os.path.join(regression_dir, 'speccpu2006', 'spec2regression.sh')
 
 # Compilation options
-breakpad_options = '-Wl,--library=stdc++ -Wl,--library=atomic -Wl,--library=pthread -Wl,--library-path=' + dump_dir + ' -Wl,--library=:dump.o' # The options required to link with the breakpad client
+breakpad_options = '-Wl,--library=stdc++ -Wl,--library=atomic -Wl,--library=pthread' # The options required to link with the breakpad client
 binary_options = '-ffunction-sections -g ' + cross_compilation_options # These are general compile options for code that is to go into the protected binary

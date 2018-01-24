@@ -1,3 +1,4 @@
+import glob
 import os
 import subprocess
 
@@ -20,10 +21,14 @@ class SPSeed(AbstractSeed):
     def replay(seed, base_symfile, base_data):
         print('************ Replaying stack padding. **********')
 
-        # Use the replay tool to find the stack offset for every function
+        # Use the replay tool to find the stack offset for every function. We do a replay for the
+        # opportunity log of the actual build, and also of that for every extra (shared) artefact.
         sections = {}
         seed.run_replay_tool(sections, os.readlink(os.path.join(base_data, 'build')), os.path.join(base_data, seed.opportunity_log))
-        seed.run_replay_tool(sections, os.path.join(support.create_path_for_seeds(config.extra_build_dir), config.breakpad_archive), os.path.join(os.path.dirname(base_data), seed.opportunity_log))
+        shared_base_data = os.path.dirname(base_data)
+        for build_prefix in glob.glob(os.path.join(shared_base_data, 'build.*')):
+            suffix = build_prefix[build_prefix.rfind('.'):]
+            seed.run_replay_tool(sections, os.readlink(build_prefix), os.path.join(os.path.dirname(base_data), seed.opportunity_log + suffix))
 
         for func in base_symfile.funcs:
             # Get the stack offset introduced
