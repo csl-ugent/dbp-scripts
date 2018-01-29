@@ -161,7 +161,7 @@ class Map:
                     continue
 
                 # Look at all lines containing .text., but ignore some
-                if '.text' in line and not ('*' in line or '.ARM.extab.text.' in line or '.ARM.exidx.text.' in line):
+                if '.text' in line and not ('*' in line or '.ARM.extab.text.' in line or '.ARM.exidx.text.' in line or '.text.__stub' in line):
                     # Handle the line depending on where we are in the map
                     # Decode the entry into an object
                     target_sections.append(Section(f_map, line, alignment_info))
