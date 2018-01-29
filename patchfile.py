@@ -329,7 +329,7 @@ class FuncPatch:
     # Constructor to create a FunctionPatch by diffing two Function instances
     @classmethod
     def create(cls, func_base, func_div):
-        assert func_base.name == func_div.name, "Creating a patch from two different funtions!"
+        assert func_base.name == func_div.name, "Creating a patch from two different functions!"
         self = cls(func_base.name)
 
         # Section/Function alignment might introduce changes to the address offset. Align it.
