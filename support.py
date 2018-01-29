@@ -128,8 +128,15 @@ def copy_spec_tree(src, dst):
     shutil.copytree(src, dst)
     update_spec_regression(dst)
 
-# Get the object name, disregarding the archive information: arch.a(obj.o) => obj.o
+# Get the object name, in a general manner
 def get_objname(name):
+    # For the absolute paths used for the artefacts that were built extra:
+    # Remove the extra_build directory prefix.
+    if name.startswith(create_path_for_seeds(config.extra_build_dir)):
+        name = os.path.join(config.extra_build_dir, '*', os.path.relpath(name, create_path_for_seeds(config.extra_build_dir)))
+
+    # Disregard the archive information: arch.a(obj.o) => obj.o
     if '(' in name:
         name = name[name.index('(') +1: name.index(')')]
+
     return name
