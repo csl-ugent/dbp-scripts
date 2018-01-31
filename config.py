@@ -48,6 +48,7 @@ breakpad_dir =
 clang_dir =
 cross_toolchain_dir =
 regression_dir =
+spec_tarball =
 
 # Paths for tools present in those repositories
 breakpad_archive = os.path.join('src', 'client', 'linux', 'libbreakpad_client.a')

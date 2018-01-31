@@ -34,7 +34,7 @@ def main():
 
     # Install SPEC if necessary (this does not build any benchmarks)
     if not os.path.exists(config.spec_dir):
-        subprocess.check_call([config.spec_install_script, '-j', str(multiprocessing.cpu_count()), '-i', '-d', config.spec_dir])
+        subprocess.check_call([config.spec_install_script, '-j', str(multiprocessing.cpu_count()), '-i', '-d', config.spec_dir, '-f', config.spec_tarball])
 
 if __name__ == '__main__':
     main()
