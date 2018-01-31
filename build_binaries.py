@@ -33,7 +33,7 @@ def build_extra(build_dir, compile_options):
     breakpad_build_dir = os.path.join(build_dir, 'breakpad')
     os.makedirs(breakpad_build_dir)
     subprocess.check_call([os.path.join(config.breakpad_dir, 'configure'), '--host=' + config.target_triple, '--disable-tools', '--disable-processor',
-        'CC=' + config.clang_bin, 'CXX=' + config.clang_bin, 'CPPFLAGS=' + ' '.join(compile_options)], cwd=breakpad_build_dir, stdout=subprocess.DEVNULL)
+        'CC=' + config.clang_bin, 'CXX=' + config.clang_bin, 'CFLAGS=' + ' '.join(compile_options), 'CXXFLAGS=' + ' '.join(compile_options)], cwd=breakpad_build_dir, stdout=subprocess.DEVNULL)
     subprocess.check_call(['make'], cwd=breakpad_build_dir, stdout=subprocess.DEVNULL)
     ret_options.append('-Wl,--library-path=' + breakpad_build_dir)
     ret_options.append('-Wl,--library=:' + config.breakpad_archive)
