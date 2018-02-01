@@ -7,7 +7,7 @@ import support
 
 def main():
     print('************ Initialize logging  **********')
-    config.init_logging()
+    config.init_logging(False)
 
     # Generate the seeds to be used by the rest of the toolflow
     print('************ Generating seeds **********')

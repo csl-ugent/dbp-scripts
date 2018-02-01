@@ -38,9 +38,9 @@ seed_file = os.path.join(base_dir, 'seeds.txt')
 spec_dir = os.path.join(base_dir, 'spec2006')
 
 # Error logging, log everything to the same file.
-def init_logging():
+def init_logging(append=True):
     logger = logging.getLogger()
-    fh = logging.FileHandler(log_file)
+    fh = logging.FileHandler(log_file, mode='a' if append else 'w')
     logger.addHandler(fh)
 init_logging()
 
