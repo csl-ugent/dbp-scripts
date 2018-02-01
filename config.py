@@ -17,7 +17,7 @@ cross_compilation_options =
 scripts_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
 ld_dir = os.path.join(scripts_dir, 'ld')
 dump_dir = os.path.join(scripts_dir, 'dump')
-replay_dir = os.path.join(scripts_dir, 'replay')
+replay_src_dir = os.path.join(scripts_dir, 'replay')
 
 # Configurable directories and files for the test directory. Setting base_dir
 # should be enough, the rest is derived from it (but can be changed).
@@ -29,6 +29,7 @@ data_dir = os.path.join(base_dir, 'data')
 gpg_dir = os.path.join(base_dir, 'gpg')
 log_file = os.path.join(base_dir, 'errors')
 patches_dir = os.path.join(base_dir, 'patches')
+replay_dir = os.path.join(base_dir, 'replay')
 reports_dir = os.path.join(base_dir, 'reports')
 results_dir = os.path.join(base_dir, 'results')
 tmp_dir = os.path.join(base_dir, 'tmp')

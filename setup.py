@@ -2,6 +2,7 @@
 import gnupg
 import multiprocessing
 import os
+import shutil
 import subprocess
 
 # Import own modules
@@ -24,6 +25,8 @@ def main():
 
     # Generate helper tools
     print('************ Making replay tools **********')
+    shutil.rmtree(config.replay_dir, True)
+    shutil.copytree(config.replay_src_dir, config.replay_dir)
     subprocess.check_call(['make', 'all', 'LLVM_DIR=' + config.clang_dir], cwd=config.replay_dir)
 
     print('************ Making breakpad tools **********')
