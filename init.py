@@ -17,6 +17,8 @@ def main():
     print('************ Creating subdirectories **********')
     if not os.path.exists(config.reports_dir):
         os.mkdir(config.reports_dir)
+    if not os.path.exists(config.tmp_dir):
+        os.mkdir(config.tmp_dir)
 
 if __name__ == '__main__':
     main()

@@ -19,30 +19,32 @@ ld_dir = os.path.join(scripts_dir, 'ld')
 dump_dir = os.path.join(scripts_dir, 'dump')
 replay_src_dir = os.path.join(scripts_dir, 'replay')
 
-# Configurable directories and files for the test directory. Setting base_dir
-# should be enough, the rest is derived from it (but can be changed).
+# Configurable directories and files for the test directory. Setting base_dir and bin_dir
+# should be enough, the rest is derived from them (but can be changed).
+bin_dir =
 base_dir =
 extra_build_dir = os.path.join(base_dir, 'extra_build') # This directory contains the build directories for extra source code (such as breakpad client)
-breakpad_server_dir = os.path.join(base_dir, 'breakpad_server')
+breakpad_server_dir = os.path.join(bin_dir, 'breakpad_server')
 build_dir = os.path.join(base_dir, 'build')
 data_dir = os.path.join(base_dir, 'data')
-gpg_dir = os.path.join(base_dir, 'gpg')
+gpg_dir = os.path.join(bin_dir, 'gpg')
 log_file = os.path.join(base_dir, 'errors')
 patches_dir = os.path.join(base_dir, 'patches')
-replay_dir = os.path.join(base_dir, 'replay')
+replay_dir = os.path.join(bin_dir, 'replay')
 reports_dir = os.path.join(base_dir, 'reports')
 results_dir = os.path.join(base_dir, 'results')
 tmp_dir = os.path.join(base_dir, 'tmp')
 link_script = os.path.join(tmp_dir, 'link.xc')
 seed_file = os.path.join(base_dir, 'seeds.txt')
-spec_dir = os.path.join(base_dir, 'spec2006')
+spec_dir = os.path.join(bin_dir, 'spec2006')
 
 # Error logging, log everything to the same file.
 def init_logging(append=True):
     logger = logging.getLogger()
     fh = logging.FileHandler(log_file, mode='a' if append else 'w')
     logger.addHandler(fh)
-init_logging()
+if os.path.exists(base_dir):
+    init_logging()
 
 # Paths for repositories/tools we use
 breakpad_dir =

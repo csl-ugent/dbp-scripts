@@ -9,10 +9,11 @@ import subprocess
 import config
 
 def main():
-    # Create the subdirectories
-    print('************ Creating subdirectories **********')
-    if not os.path.exists(config.tmp_dir):
-        os.mkdir(config.tmp_dir)
+    print('************ Creating directory structure  **********')
+    if not os.path.exists(config.bin_dir):
+        os.mkdir(config.bin_dir)
+    if not os.path.exists(config.base_dir):
+        os.mkdir(config.base_dir)
     if not os.path.exists(config.gpg_dir):
         os.mkdir(config.gpg_dir, mode=0o700)
 
