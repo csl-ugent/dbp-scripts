@@ -246,7 +246,10 @@ class StackPatch:
         div_offset = div_record.address - func_div.address
         base_offset = base_record.address - func_base.address
         address_diff = div_offset - base_offset
-        return cls(size_diff, address_diff)
+        if size_diff or address_diff:
+            return cls(size_diff, address_diff)
+        else:
+            return None
 
     @classmethod
     def read(cls, header):
