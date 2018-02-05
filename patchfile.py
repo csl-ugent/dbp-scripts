@@ -24,10 +24,10 @@ class AdditionPatch:
             res += str(line) + '\n'
         return res
 
-    def apply(self, lines, offset):
-        lines = lines[:offset] + self.lines + lines[offset:]
+    def apply(self, func, offset):
+        func.lines = func.lines[:offset] + self.lines + func.lines[offset:]
         self.update_address_offset()
-        return (lines, len(self.lines), len(self.lines))
+        return (len(self.lines), len(self.lines))
 
     @classmethod
     def create(cls, offset, lines):
@@ -67,11 +67,11 @@ class DeletionPatch:
     def __str__(self):
         return 'D' + hex_str(self.size) + '\n'
 
-    def apply(self, lines, offset):
-        self.lines = lines[offset:offset + self.size]
-        del lines[offset:offset + self.size]
+    def apply(self, func, offset):
+        self.lines = func.lines[offset:offset + self.size]
+        del func.lines[offset:offset + self.size]
         self.update_address_offset()
-        return (lines, -self.size, 0)
+        return (-self.size, 0)
 
     @classmethod
     def create(cls, offset, lines):
@@ -115,12 +115,12 @@ class LinePatch:
             res += hex_str(self.size_diff)
         return res + '\n'
 
-    def apply(self, lines, offset):
-        line = lines[offset]
+    def apply(self, func, offset):
+        line = func.lines[offset]
         line.update_address(address_offset + self.address_diff)
         line.size = line.size + self.size_diff
         self.update_address_offset()
-        return (lines, 0, 1)
+        return (0, 1)
 
     @classmethod
     def create(cls, offset, base, div):
@@ -169,11 +169,11 @@ class SubstitutionPatch:
             res += str(line) + '\n'
         return res
 
-    def apply(self, lines, offset):
-        self.deleted_lines = lines[offset:offset + self.deleted_size]
-        lines = lines[:offset] + self.added_lines + lines[offset + self.deleted_size:]
+    def apply(self, func, offset):
+        self.deleted_lines = func.lines[offset:offset + self.deleted_size]
+        func.lines = func.lines[:offset] + self.added_lines + func.lines[offset + self.deleted_size:]
         self.update_address_offset()
-        return (lines, len(self.added_lines) - self.deleted_size, len(self.added_lines))
+        return (len(self.added_lines) - self.deleted_size, len(self.added_lines))
 
     @classmethod
     def create(cls, offset, added_lines, deleted_lines):
@@ -317,7 +317,7 @@ class FuncPatch:
                 line.update_address(address_offset)
 
             # Apply the actual patch and receive its results. Then update the offsets using this information.
-            (func.lines, patch_offset, patch_size) = patch.apply(func.lines, offset)
+            (patch_offset, patch_size) = patch.apply(func, offset)
             line_offset += patch_offset
             update_offset = offset + patch_size
 
