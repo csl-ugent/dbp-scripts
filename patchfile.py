@@ -27,7 +27,7 @@ class AdditionPatch:
     def apply(self, func, offset):
         func.lines = func.lines[:offset] + self.lines + func.lines[offset:]
         self.update_address_offset()
-        return (len(self.lines), len(self.lines))
+        return (len(self.lines), len(self.lines), sum([line.size for line in self.lines]))
 
     @classmethod
     def create(cls, offset, lines):
@@ -69,9 +69,10 @@ class DeletionPatch:
 
     def apply(self, func, offset):
         self.lines = func.lines[offset:offset + self.size]
+        size_diff = -sum([line.size for line in self.lines])
         del func.lines[offset:offset + self.size]
         self.update_address_offset()
-        return (-self.size, 0)
+        return (-self.size, 0, size_diff)
 
     @classmethod
     def create(cls, offset, lines):
@@ -120,7 +121,7 @@ class LinePatch:
         line.update_address(address_offset + self.address_diff)
         line.size = line.size + self.size_diff
         self.update_address_offset()
-        return (0, 1)
+        return (0, 1, self.size_diff)
 
     @classmethod
     def create(cls, offset, base, div):
@@ -171,9 +172,10 @@ class SubstitutionPatch:
 
     def apply(self, func, offset):
         self.deleted_lines = func.lines[offset:offset + self.deleted_size]
+        size_diff = sum([line.size for line in self.added_lines]) - sum([line.size for line in self.deleted_lines])
         func.lines = func.lines[:offset] + self.added_lines + func.lines[offset + self.deleted_size:]
         self.update_address_offset()
-        return (len(self.added_lines) - self.deleted_size, len(self.added_lines))
+        return (len(self.added_lines) - self.deleted_size, len(self.added_lines), size_diff)
 
     @classmethod
     def create(cls, offset, added_lines, deleted_lines):
@@ -306,6 +308,9 @@ class FuncPatch:
         func.calculate_lineless_area()
         new_func_address = func.address + address_offset
 
+        # We keep a list of offsets introduced to all the stack records by line changes
+        stack_offsets = [0] * len(func.stacks)
+
         line_offset = 0 # Track the running offset introduced by the patches
         update_offset = 0 # Track the offset from which we should start updating addresses
         for patch in self.patches:
@@ -316,14 +321,30 @@ class FuncPatch:
             for line in func.lines[update_offset:offset]:
                 line.update_address(address_offset)
 
+            # Get the farthest address that, after the patch, will be fixed
+            patch_line = func.lines[offset] if offset < len(func.lines) else None
+            patch_address = patch_line.address + patch_line.size if patch_line else func.address + func.size
+
             # Apply the actual patch and receive its results. Then update the offsets using this information.
-            (patch_offset, patch_size) = patch.apply(func, offset)
+            (patch_offset, patch_size, size_diff) = patch.apply(func, offset)
             line_offset += patch_offset
             update_offset = offset + patch_size
+
+            # Adjust any stack records within the function that are found after the patch address.
+            for iii, stack in enumerate(func.stacks):
+                if patch_address < stack.address:
+                    stack_offsets[iii] += size_diff
 
         # Finish updating addresses
         for line in func.lines[update_offset:]:
             line.update_address(address_offset)
+
+        # Perform the actual adjustment to the stack records. Don't touch the
+        # stack offset record. This is handled separately by StackPatches.
+        stack_offset_record = func.get_stack_offset_record()
+        for stack, stack_offset in zip(func.stacks, stack_offsets):
+            if not stack_offset_record or stack != stack_offset_record:
+                stack.address += stack_offset
 
         # Rebuild function-wide information
         func.rebuild_meta_info(new_func_address)
