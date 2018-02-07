@@ -303,8 +303,7 @@ class FuncPatch:
         if self.stack_patch:
             self.stack_patch.apply(func)
 
-        # Store the offset of the first line from the function address.
-        first_line_offset = (func.lines[0].address - func.address) if func.lines else 0
+        func.calculate_lineless_area()
         new_func_address = func.address + address_offset
 
         line_offset = 0 # Track the running offset introduced by the patches
@@ -327,7 +326,7 @@ class FuncPatch:
             line.update_address(address_offset)
 
         # Rebuild function-wide information
-        func.rebuild_meta_info(first_line_offset, new_func_address)
+        func.rebuild_meta_info(new_func_address)
 
     # Constructor to create a FunctionPatch by diffing two Function instances
     @classmethod
