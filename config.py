@@ -19,24 +19,31 @@ ld_dir = os.path.join(scripts_dir, 'ld')
 dump_dir = os.path.join(scripts_dir, 'dump')
 replay_src_dir = os.path.join(scripts_dir, 'replay')
 
-# Configurable directories and files for the test directory. Setting base_dir and bin_dir
-# should be enough, the rest is derived from them (but can be changed).
+# Configurable directories for helper tools and such that only need to be set up once.
+# Setting bin_dir should be enough.
 bin_dir =
-base_dir =
-extra_build_dir = os.path.join(base_dir, 'extra_build') # This directory contains the build directories for extra source code (such as breakpad client)
 breakpad_server_dir = os.path.join(bin_dir, 'breakpad_server')
-build_dir = os.path.join(base_dir, 'build')
-data_dir = os.path.join(base_dir, 'data')
 gpg_dir = os.path.join(bin_dir, 'gpg')
-log_file = os.path.join(base_dir, 'errors')
-patches_dir = os.path.join(base_dir, 'patches')
 replay_dir = os.path.join(bin_dir, 'replay')
-reports_dir = os.path.join(base_dir, 'reports')
-results_dir = os.path.join(base_dir, 'results')
-tmp_dir = os.path.join(base_dir, 'tmp')
-link_script = os.path.join(tmp_dir, 'link.xc')
-seed_file = os.path.join(base_dir, 'seeds.txt')
 spec_dir = os.path.join(bin_dir, 'spec2006')
+
+# Configurable directories and files for base directory in which all results are generated.
+# Setting base_dir should be enough. These variables can be re-configured by calling the
+# set_base_dir function (which doesn't actually set base_dir itself, so that remains constant).
+base_dir =
+def set_base_dir(base_dir):
+    global build_dir, data_dir, extra_build_dir, log_file, patches_dir, reports_dir, seed_file, tmp_dir, link_script
+    build_dir = os.path.join(base_dir, 'build')
+    data_dir = os.path.join(base_dir, 'data')
+    extra_build_dir = os.path.join(base_dir, 'extra_build') # This directory contains the build directories for extra source code (such as breakpad client)
+    log_file = os.path.join(base_dir, 'errors')
+    patches_dir = os.path.join(base_dir, 'patches')
+    reports_dir = os.path.join(base_dir, 'reports')
+    results_dir = os.path.join(base_dir, 'results')
+    seed_file = os.path.join(base_dir, 'seeds.txt')
+    tmp_dir = os.path.join(base_dir, 'tmp')
+    link_script = os.path.join(tmp_dir, 'link.xc')
+set_base_dir(base_dir)
 
 # Error logging, log everything to the same file.
 def init_logging(append=True):
