@@ -15,6 +15,9 @@ class SPSeed(AbstractSeed):
     default_compile_options = ['-mllvm', '-stackpadding=' + str(config.default_padding)]
     opportunity_log = 'stackpadding.list'
 
+    def compile_options_for_padding(padding):
+        return ['-mllvm', '-stackpadding=' + str(padding)]
+
     def diversify_build(seed):
         return ['-mllvm', '-stackpadding=' + str(config.max_padding), '-mllvm', '-padseed=' + str(seed)]
 

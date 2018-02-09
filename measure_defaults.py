@@ -166,7 +166,7 @@ def main():
         args.crash_report_time = True
 
     # Default compilation options
-    compile_options = [config.binary_options] + [args.arguments]
+    compile_options = build_binaries.get_default_compile_options() + [args.arguments]
     extra_build_dir = os.path.join(config.tmp_dir, 'spec_measurements_extra')
 
     # As we want to compare two SPEC builds we expect this one to be built with differing options (or a compiler

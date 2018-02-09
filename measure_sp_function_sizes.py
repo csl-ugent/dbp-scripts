@@ -6,6 +6,7 @@ import pyexcel
 # Import own modules
 import build_binaries
 import config
+import seed
 import support
 from linker import Map
 
@@ -24,8 +25,9 @@ def main():
 
     # Get all the sizes of the default binaries
     sheets = {}
-    build_binaries.build_spec(build_dir, ' '.join([config.binary_options]), spec_config_name)
     print('************ Building default binaries... **********')
+    default_compile_options = build_binaries.get_default_compile_options(False)
+    build_binaries.build_spec(build_dir, ' '.join(default_compile_options), spec_config_name)
     for (benchmark, name) in support.benchmarks_gen():
         sheet = pyexcel.Sheet(name=benchmark)
         sheets[benchmark] = sheet
@@ -38,11 +40,11 @@ def main():
         sizes = ['Original'] + [size for _,size in functions]
         sheet.column += sizes
 
-    # Then compile for diversfied binaries (stackpadding only)
-    for max_padding in range(config.default_padding, config.max_padding + 8, 8):
-        print('************ Building stackpadded binary with SP ' + str(max_padding) + '... **********')
-        # Adapt the arguments so that now we use the real max padding and add random padding
-        compile_options = [config.binary_options, '-mllvm -stackpadding=' + str(max_padding)]
+    # Then compile for diversified binaries (stackpadding only)
+    for padding in range(config.default_padding, config.max_padding + 8, 8):
+        print('************ Building stackpadded binary with SP ' + str(padding) + '... **********')
+        # Add compile options for this amount of padding
+        compile_options = default_compile_options + seed.SPSeed.compile_options_for_padding(padding)
         build_binaries.build_spec(build_dir, ' '.join(compile_options), spec_config_name)
         for (benchmark, name) in support.benchmarks_gen():
             sheet = sheets[benchmark]
@@ -50,13 +52,13 @@ def main():
             functions = get_functions(mapfile)
 
             # Add the sizes and size increases columns
-            sizes = ['Pad ' + str(max_padding)] + [size for _,size in functions]
+            sizes = ['Pad ' + str(padding)] + [size for _,size in functions]
             sheet.column += sizes
-            increases = ['Increase ' + str(max_padding)]
+            increases = ['Increase ' + str(padding)]
             for size1, size2 in list(zip(sheet.column[1], sizes))[1:]:
                 increases.append(size2 - size1)
             sheet.column += increases
-            increases = ['Increase2base ' + str(max_padding)]
+            increases = ['Increase2base ' + str(padding)]
             for size1, size2 in list(zip(sheet.column[2], sizes))[1:]:
                 increases.append(size2 - size1)
             sheet.column += increases
