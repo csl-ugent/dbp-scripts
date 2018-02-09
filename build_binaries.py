@@ -71,6 +71,13 @@ def build_spec(target_dir, compile_options, spec_config_name='spec2006'):
         s2r_cmd = Template('$binary -s "${ssh_params}" -p $spec_dir -b build_base_${spec_config_name}-nn.0000 -t 5000 -d $target_dir')
         subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_dict)))
 
+def get_default_compile_options(with_protections=True):
+    default_compile_options = [config.binary_options]
+    if with_protections:
+        for protection in seed.get_types():
+            default_compile_options += protection.default_compile_options
+    return default_compile_options
+
 def main(compile_args=[]):
     # Use the default template linker script to minimize the differences when we start protecting at link time
     linker.create_linker_script(None)
@@ -83,9 +90,7 @@ def main(compile_args=[]):
     # Start by compiling for the default binaries. Build up the compile options, starting from the binary options, adding the default
     # compile options for the diferent protections, then the compile arguments passed on the command line.
     print('************ Building default binaries... **********')
-    default_compile_options = [config.binary_options]
-    for protection in seed.get_types():
-        default_compile_options += protection.default_compile_options
+    default_compile_options = get_default_compile_options()
     compile_options = default_compile_options + compile_args
 
     # We start building the extra binaries, and add their extra compile options to the ones we use to build SPEC.
