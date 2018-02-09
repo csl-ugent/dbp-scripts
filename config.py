@@ -39,7 +39,6 @@ def set_base_dir(base_dir):
     log_file = os.path.join(base_dir, 'errors')
     patches_dir = os.path.join(base_dir, 'patches')
     reports_dir = os.path.join(base_dir, 'reports')
-    results_dir = os.path.join(base_dir, 'results')
     seed_file = os.path.join(base_dir, 'seeds.txt')
     tmp_dir = os.path.join(base_dir, 'tmp')
     link_script = os.path.join(tmp_dir, 'link.xc')

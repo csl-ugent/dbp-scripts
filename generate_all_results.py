@@ -39,17 +39,14 @@ def complete_run(args, report=True):
         report_symfile_sizes.main()
 
 def generate_results(args, name):
+    # Create output directory
+    output_dir = os.path.join(config.base_dir, name)
+    shutil.rmtree(output_dir, True)
+    os.mkdir(output_dir)
+    config.set_base_dir(output_dir)
+
     # Generate the results for these arguments
     complete_run(args)
-
-    # Copy over the stuff we want (data, patches, reports, and errors) to the
-    # subdirectory with the right name
-    output_dir = os.path.join(config.results_dir, name)
-    os.mkdir(output_dir)
-    shutil.move(config.data_dir, output_dir)
-    shutil.move(config.patches_dir, output_dir)
-    shutil.move(config.reports_dir, output_dir)
-    shutil.move(config.log_file, output_dir)
 
 if __name__ == '__main__':
     # Parsing the arguments
@@ -62,10 +59,6 @@ if __name__ == '__main__':
     if args.arguments is not None:
         complete_run(args.arguments, args.report)
     else:
-        # Start with destroying the previous directory structure, if it exists
-        shutil.rmtree(config.results_dir, True)
-        os.mkdir(config.results_dir)
-
         for olevel in ['-O' + str(iii) for iii in list(range(1, 3 +1)) + ['s']]:
             generate_results([olevel, '-fomit-frame-pointer'], 'nofp_' + olevel)
             generate_results([olevel], 'fp_' + olevel)
