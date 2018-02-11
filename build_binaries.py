@@ -55,7 +55,7 @@ def build_spec(target_dir, compile_options, spec_config_name='spec2006'):
         'spec_dir': config.spec_dir
     }
 
-    install_cmd = Template('$binary -r -j $concurrency -D -d $spec_dir -c $spec_config_name -t $cross_toolchain_dir -p $target_triple -C $clang_dir '
+    install_cmd = Template('$binary -r -j $concurrency -D -d $spec_dir -c $spec_config_name -t $cross_toolchain_dir -p $target_triple -C $clang_dir -l '
             '-O "${compile_options} -Wl,--no-demangle -Wl,--hash-style=sysv -Wl,--no-merge-exidx-entries -Wl,--allow-shlib-undefined -Wl,-T $link_script"')
     subprocess.check_call(shlex.split(install_cmd.substitute(install_dict)))
 
