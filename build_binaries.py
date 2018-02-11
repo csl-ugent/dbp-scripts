@@ -69,7 +69,7 @@ def build_spec(target_dir, compile_options, spec_config_name='spec2006'):
         }
 
         s2r_cmd = Template('$binary -s "${ssh_params}" -p $spec_dir -b build_base_${spec_config_name}-nn.0000 -t 5000 -d $target_dir')
-        subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_dict)))
+        subprocess.check_call(shlex.split(s2r_cmd.substitute(s2r_dict)), stdout=subprocess.DEVNULL)
 
 def get_default_compile_options(with_protections=True):
     default_compile_options = [config.binary_options]

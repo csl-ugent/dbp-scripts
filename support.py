@@ -120,7 +120,7 @@ def create_path_for_seeds(base_path, *seeds):
 
 # Update the regression scripts in the target directory, presuming that the benchmarks (and reference inputs and such) are already present.
 def update_spec_regression(target_dir):
-    subprocess.check_call([config.spec2regression_script, '-n', '-s', config.ssh_params, '-p', config.spec_dir, '-t', '5000', '-d', target_dir], stderr=subprocess.DEVNULL)
+    subprocess.check_call([config.spec2regression_script, '-n', '-s', config.ssh_params, '-p', config.spec_dir, '-t', '5000', '-d', target_dir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 # Copy over existing benchmark spec tree and update the regression scripts
 def copy_spec_tree(src, dst):
