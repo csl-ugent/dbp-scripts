@@ -153,7 +153,7 @@ def measure_benchmark_time(build_dir, build_dir_opt):
 def main():
     # Parsing the arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--arguments', type=str, default='', help='Extra compiler arguments to be used.')
+    parser.add_argument('-a', '--arguments', nargs=argparse.REMAINDER, default=[], help='Extra compiler arguments to be used.')
     parser.add_argument('-k', '--keep_build', action='store_true', help='Keep the build directory, do not rebuild.')
     parser.add_argument('-c', '--compilation_time', action='store_true', help='Measure the compilation time.')
     parser.add_argument('-r', '--crash_report_time', action='store_true', help='Measure the crash report time.')
@@ -166,7 +166,7 @@ def main():
         args.crash_report_time = True
 
     # Default compilation options
-    compile_options = build_binaries.get_default_compile_options() + [args.arguments]
+    compile_options = build_binaries.get_default_compile_options() + args.arguments
     extra_build_dir = os.path.join(config.tmp_dir, 'spec_measurements_extra')
 
     # As we want to compare two SPEC builds we expect this one to be built with differing options (or a compiler
