@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import argparse
 import itertools
 import os
 import pyexcel
@@ -20,13 +21,18 @@ def get_functions(mapfile):
     return functions
 
 def main():
+    # Parsing the arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--arguments', nargs=argparse.REMAINDER, default=[], help='Extra compiler arguments to be used.')
+    args = parser.parse_args()
+
     build_dir = os.path.join(config.tmp_dir, 'spec_measurements')
     spec_config_name = 'measuring'
 
     # Get all the sizes of the default binaries
     sheets = {}
     print('************ Building default binaries... **********')
-    default_compile_options = build_binaries.get_default_compile_options(False)
+    default_compile_options = build_binaries.get_default_compile_options(False) + args.arguments
     build_binaries.build_spec(build_dir, ' '.join(default_compile_options), spec_config_name)
     for (benchmark, name) in support.benchmarks_gen():
         sheet = pyexcel.Sheet(name=benchmark)
