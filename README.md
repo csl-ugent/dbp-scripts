@@ -7,15 +7,14 @@ To execute the scripts in this repository we require:
 
 Repositories:
 - breakpad
-- Diablo toolchains
 - Diablo regression
 
 ## Configuration
 The configuration can be done in the config.py file. The things that can be set here are certain parameters for the protections and testing environment, and the paths to repositories and tools that are required.
 
 ## Recreating tests
-The tests can be recreated using the generate_all_results.py script. For every combination of compilation flags it generates data by invoking these scripts in order:
-- setup.py: Does some general setup such as creating helper tools and generating seeds.
+The tests can be recreated using the generate_all_results.py script. When invoked with arguments it generates results using these as compilation arguments, else it generates results for every combination of compilation flags. It generates data by invoking these scripts in order:
+- init.py: Does some initialization such as creating a logfile and generating seeds.
 - build_binaries.py: Build the binaries, with protections.
 - link_binaries.py: Apply the protections that are implemented at linker level.
 - extract_data.py: Extract all the data (symfiles and others) that is required to generate the patches.
@@ -32,6 +31,7 @@ Reports on the generated data are then generated (in the ODS format) using these
 - report_symfile_sizes.py: The sizes of the symfiles for the default and fully diversified binaries.
 
 Some other scripts of note are:
+- setup.py: Does the general setup for ∆Breakpad, creating a directory structure and building helper binaries.
 - measure_defaults.py: Can be used to generate a lot of measurements on the default binaries with the breakpad client but without any protections.
 - measure_sp_function_sizes.py: Can be used to measure the increase/decrease in function sizes for different amounts of stack padding.
 - patch.py: Can be used to create individual patches between symfiles.
