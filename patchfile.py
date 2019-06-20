@@ -206,13 +206,13 @@ class SubstitutionPatch:
         for line in self.deleted_lines:
             address_offset -= line.size
 
-class StackPatch:
+class StackRecordPatch:
     def __init__(self, size_diff, address_diff):
         self.address_diff = address_diff
         self.size_diff = size_diff
 
     def __repr__(self):
-        return 'Patch the stack offset record with size difference: ' + hex_str(self.size_diff) + ' and address difference: ' + hex_str(self.address_diff) + '\n'
+        return 'Patch the stack record with size difference: ' + hex_str(self.size_diff) + ' and address difference: ' + hex_str(self.address_diff) + '\n'
 
     def __str__(self):
         if self.size_diff:
@@ -224,20 +224,14 @@ class StackPatch:
 
         return res
 
-    def apply(self, func_base):
-        base_record = func_base.get_stack_offset_record()
-
-        assert base_record, 'Trying to apply a stack patch when no stack offset record is present!'
+    def apply(self, base_record):
         base_record.address += self.address_diff
         base_record.set_frame_size(base_record.get_frame_size() + self.size_diff)
 
     @classmethod
-    def create(cls, func_base, func_div):
-        base_record = func_base.get_stack_offset_record()
-        div_record = func_div.get_stack_offset_record()
-
+    def create(cls, func_base, func_div, base_record, div_record):
         # The arguments can be None, but only when they are both so.
-        assert bool(base_record) == bool(div_record), 'One of the functions has stack offset record while the other does not. This can not happen.'
+        assert bool(base_record) == bool(div_record), 'One of the functions has a stack record while the other does not. This can not happen.'
 
         # If both arguments are None, we don't need a patch
         if base_record is None and div_record is None:
@@ -255,6 +249,9 @@ class StackPatch:
 
     @classmethod
     def read(cls, header):
+        if not header:
+            return None
+
         tokens = header.split(':')
         if len(tokens) == 2:
             size_diff = hex_int(tokens[0]) * 8 if tokens[0] else 0
@@ -263,6 +260,76 @@ class StackPatch:
             size_diff = hex_int(tokens[0]) * 8
             address_diff = 0
         return cls(size_diff, address_diff)
+
+class StackPatch:
+    def __init__(self, stack_offset_record_patch, secondary_stack_patches):
+        self.stack_offset_record_patch = stack_offset_record_patch
+        self.secondary_stack_patches = secondary_stack_patches
+
+    def __repr__(self):
+        return repr(self.stack_offset_record_patch)
+
+    def __str__(self):
+        res =  str(self.stack_offset_record_patch) if self.stack_offset_record_patch else ''
+
+        if not all(x is None for x in self.secondary_stack_patches):
+            for patch in self.secondary_stack_patches:
+                res += ','
+                if patch:
+                    res += str(patch)
+
+        return res
+
+    def apply(self, func_base):
+        stack_offset_record = func_base.get_stack_offset_record()
+        if self.stack_offset_record_patch:
+            assert stack_offset_record, 'Trying to apply a stack offset record patch when no stack offset record is present!'
+            self.stack_offset_record_patch.apply(stack_offset_record)
+
+        secondary_patch_index = 0
+        for stack_record in func_base.stacks[1:]:
+            if secondary_patch_index >= len(self.secondary_stack_patches):
+                break
+
+            # We already handled the stack offset record
+            if stack_record is stack_offset_record:
+                continue
+
+            stack_patch = self.secondary_stack_patches[secondary_patch_index]
+            if stack_patch:
+                stack_patch.apply(stack_record)
+            secondary_patch_index += 1
+
+    @classmethod
+    def create(cls, func_base, func_div):
+        base_offset_record = func_base.get_stack_offset_record()
+        div_offset_record = func_div.get_stack_offset_record()
+        stack_offset_record_patch = StackRecordPatch.create(func_base, func_div, base_offset_record, div_offset_record)
+
+        secondary_stack_patches = []
+        for base_record, div_record in zip(func_base.stacks[1:], func_div.stacks[1:]):
+            # We already handled the stack offset records
+            if base_record is base_offset_record:
+                assert div_record is div_offset_record, 'Stack offset records in diffing functions not in same index!'
+                continue
+
+            secondary_stack_patches.append(StackRecordPatch.create(func_base, func_div, base_record, div_record))
+
+        if stack_offset_record_patch or not all(x is None for x in secondary_stack_patches):
+            return cls(stack_offset_record_patch, secondary_stack_patches)
+        else:
+            return None
+
+    @classmethod
+    def read(cls, header):
+        tokens = header.split(',')
+        stack_offset_record_patch = StackRecordPatch.read(tokens[0])
+
+        secondary_stack_patches = []
+        for token in tokens[1:]:
+            secondary_stack_patches.append(StackRecordPatch.read(token))
+
+        return cls(stack_offset_record_patch, secondary_stack_patches)
 
 class FuncPatch:
     """A class representing a function patch"""
@@ -308,9 +375,6 @@ class FuncPatch:
         func.calculate_lineless_area()
         new_func_address = func.address + address_offset
 
-        # We keep a list of offsets introduced to all the stack records by line changes
-        stack_offsets = [0] * len(func.stacks)
-
         line_offset = 0 # Track the running offset introduced by the patches
         update_offset = 0 # Track the offset from which we should start updating addresses
         for patch in self.patches:
@@ -330,21 +394,9 @@ class FuncPatch:
             line_offset += patch_offset
             update_offset = offset + patch_size
 
-            # Adjust any stack records within the function that are found after the patch address.
-            for iii, stack in enumerate(func.stacks):
-                if patch_address < stack.address:
-                    stack_offsets[iii] += size_diff
-
         # Finish updating addresses
         for line in func.lines[update_offset:]:
             line.update_address(address_offset)
-
-        # Perform the actual adjustment to the stack records. Don't touch the
-        # stack offset record. This is handled separately by StackPatches.
-        stack_offset_record = func.get_stack_offset_record()
-        for stack, stack_offset in zip(func.stacks, stack_offsets):
-            if not stack_offset_record or stack != stack_offset_record:
-                stack.address += stack_offset
 
         # Rebuild function-wide information
         func.rebuild_meta_info(new_func_address)
