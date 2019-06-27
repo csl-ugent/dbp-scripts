@@ -73,4 +73,4 @@ spec2regression_script = os.path.join(regression_dir, 'speccpu2006', 'spec2regre
 
 # Compilation options
 breakpad_options = '-Wl,--library=stdc++ -Wl,--library=atomic -Wl,--library=pthread' # The options required to link with the breakpad client
-binary_options = '-fno-PIC -ffunction-sections -g ' + cross_compilation_options # These are general compile options for code that is to go into the protected binary
+binary_options = '-fno-PIC -ffunction-sections -gdwarf-3 ' + cross_compilation_options # These are general compile options for code that is to go into the protected binary

@@ -10,6 +10,7 @@ import timeit
 # Import own modules
 import build_binaries
 import config
+import linker
 import stacktrace
 import support
 from support import hex_int
@@ -164,6 +165,9 @@ def main():
     if not args.compilation_time and not args.crash_report_time and not args.benchmark_time:
         args.compilation_time = True
         args.crash_report_time = True
+
+    # Use the default template linker script to minimize the differences when we start protecting at link time
+    linker.create_linker_script(None)
 
     # Default compilation options
     compile_options = build_binaries.get_default_compile_options() + args.arguments
