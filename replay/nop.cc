@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
   std::ifstream input(argv[4]);
   std::string line;
   std::mt19937 fun_rng;
-  uint32_t offset, offset_diff;
+  uint32_t offset = 0, offset_diff = 0;
   bool outputting = false;
   while (std::getline(input, line)) {
     /* Differentiate between function record and BBL record */
