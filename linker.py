@@ -154,7 +154,7 @@ class Map:
                 # We haven't arrived to the good part yet
                 if target_sections is None:
                     # Look for the start address of the text segment
-                    m = re.search('(?<=PROVIDE \(__executable_start,)\s+(?P<base>\w+)(?=\))', line)
+                    m = re.search('(?<=PROVIDE \(__executable_start = SEGMENT_START)\s*(\("text-segment",)\s+(?P<base>\w+)(?=\))', line)
                     if m:
                         self.text_start_address = hex_int(m.group('base'))
 
